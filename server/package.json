@@ -4,7 +4,9 @@
   "private": true,
   "description": "Backend Tử Vi (Node/TypeScript) — port từ engine Python lasotuvi",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
@@ -15,13 +17,19 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.4.0",
+    "@electric-sql/pglite": "^0.5.14",
     "@fastify/cors": "^11.4.0",
+    "@fastify/jwt": "^10.2.7",
+    "@fastify/swagger": "^9.9.3",
+    "@fastify/swagger-ui": "^6.1.2",
     "fastify": "^5.6.0",
     "openai": "^7.0.0",
+    "pg": "^8.23.1",
     "zod": "^4.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@types/pg": "^8.23.1",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0",
     "vitest": "^5.1.0"

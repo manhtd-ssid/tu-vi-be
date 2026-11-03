@@ -3,21 +3,38 @@
 Bản Node của backend Tử Vi, port 1-1 từ engine Python (`src/`, `agents/`). Hợp đồng
 HTTP giữ nguyên, frontend không phải sửa gì.
 
-Công nghệ: Node ≥ 20, TypeScript, Fastify 5, zod 4, vitest, `@anthropic-ai/sdk` + `openai` (tuỳ chọn).
+Công nghệ: Node ≥ 20, TypeScript, Fastify 5, zod 4, PostgreSQL (`pg`, PGlite cho dev/test),
+JWT, vitest, `@anthropic-ai/sdk` + `openai` (tuỳ chọn).
 
 ## Chạy
 
 ```bash
 cd server
 npm install
-npm run dev          # http://127.0.0.1:8973 , giao diện thử: /viewer
-npm test             # 60 test (port từ pytest)
+npm run dev          # http://127.0.0.1:8973 — tài liệu API: /docs, giao diện thử: /viewer
+npm test             # 72 test
 npm run build && npm start
 ```
 
-Cấu hình đọc từ `.env` ở gốc repo (xem `../.env.example`): `HOST`, `PORT`, `CORS_ORIGINS`,
-`API_KEY`, `ANTHROPIC_API_KEY`/`ANTHROPIC_MODEL`, `OPENAI_API_KEY`/`OPENAI_MODEL`.
-Biến môi trường thật được ưu tiên hơn `.env`. Không có key LLM thì luận giải chạy offline.
+Hoặc chạy đủ bộ (PostgreSQL + API) bằng Docker, ở gốc repo:
+
+```bash
+docker compose up --build
+```
+
+Cấu hình đọc từ `.env` ở gốc repo, xem `../.env.example` (biến môi trường thật được ưu tiên).
+Quan trọng:
+
+| Biến | Ý nghĩa |
+|---|---|
+| `DATABASE_URL` | `postgres://...` (production). `pglite://<thư mục>` hoặc để trống: Postgres nhúng cho dev (để trống = trong bộ nhớ). Bắt buộc khi `NODE_ENV=production`. |
+| `JWT_SECRET` | Khoá ký token đăng nhập. Bắt buộc khi `NODE_ENV=production`. |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Tạo/cập nhật tài khoản admin khi khởi động. |
+| `API_KEY`, `LLM_ALLOW_USERS` | Bảo vệ luận giải LLM: cần `X-API-Key`, hoặc (khi `LLM_ALLOW_USERS=1`) người dùng đã đăng nhập. |
+| `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` | Không có thì luận giải chạy offline. |
+
+Schema database tự migrate khi khởi động (`src/db/migrations.ts`). Lần đầu, kho luận giải
+được seed từ `data/kb.json` vào bảng `kb_entries`; sau đó sửa qua API admin.
 
 ## Cấu trúc
 
@@ -30,7 +47,8 @@ Biến môi trường thật được ưu tiên hơn `.env`. Không có key LLM 
 | `src/engine/cachCuc.ts` | `cach_cuc.py` | 41 quy tắc cách cục (24 nhóm) |
 | `src/engine/thoiGian.ts` | `thoi_gian.py` | Giờ đồng hồ → giờ âm, Chân Thái Dương, Tý muộn, kinh độ 63 tỉnh |
 | `src/agents/` | `agents/*.py` | RAG trên `data/kb.json`, gọi LLM, Guardrail 6 kiểm tra, ghép báo cáo 12 cung |
-| `src/api/` | `service/api.py` | Fastify: route, schema zod, cache LRU |
+| `src/api/` | `service/api.py` | Fastify: route, schema zod, cache LRU, OpenAPI |
+| `src/db/` | (mới) | Kết nối PostgreSQL/PGlite, migration |
 | `scripts/crossval.ts` + `oracle.py` | (mới) | Đối chiếu toàn bộ output Node ⇄ Python |
 
 ## API
@@ -41,7 +59,15 @@ Biến môi trường thật được ưu tiên hơn `.env`. Không có key LLM 
 | `POST /v1/luu-nien` | Thêm `nam_xem`: vận năm + 12 tháng |
 | `POST /v1/luan-giai` | Báo cáo 12 cung; `use_llm: true` cần header `X-API-Key` nếu đặt `API_KEY` |
 | `GET /v1/meta` | Danh sách giờ, tỉnh |
+| `POST /v1/luan-giai/stream` | Như trên nhưng dạng Server-Sent Events: `cach_cuc` → 12 × `cung` (mỗi cung đã qua Guardrail) → `done` |
 | `GET /health` | `{"status":"ok"}` |
+| `POST /v1/auth/register`, `POST /v1/auth/login`, `GET /v1/auth/me` | Tài khoản email + mật khẩu, trả JWT (`Authorization: Bearer ...`) |
+| `GET/POST /v1/la-so-da-luu`, `GET/DELETE /v1/la-so-da-luu/:id` | Lá số đã lưu của người dùng |
+| `GET /admin/stats` | Thống kê (cần role admin) |
+| `GET /admin/users`, `PATCH /admin/users/:id` | Tìm người dùng, đổi quyền |
+| `GET /admin/la-so` | Lá số người dùng đã lưu (tìm theo email, nhãn) |
+| `GET /admin/kb`, `GET/PUT /admin/kb/:kind/:key` | Kho luận giải (12 cung, 14 chính tinh); sửa xong báo cáo dùng nội dung mới ngay |
+| `GET /admin/luan-giai-logs` | Log luận giải, lọc `blocked=true` để xem bản bị Guardrail chặn |
 | `POST /chart`, `POST /interpret`, `GET /viewer` | Tương thích `laso_viewer.html` |
 
 Body giống bản Python, ví dụ:
@@ -50,8 +76,15 @@ Sai kiểu/thiếu trường → `422 {"detail":[...]}`; ngày không tồn tạ
 
 Khác bản Python (có chủ đích):
 - Schema chặt hơn pydantic: số phải là số JSON (`"15"` dạng chuỗi bị từ chối), boolean phải là `true/false`.
-- Chưa có trang `/docs` (OpenAPI) như FastAPI.
 - Lỗi 422 có cùng khung `{"detail":[{type, loc, msg}]}` nhưng câu chữ `msg` lấy từ zod.
+
+## Kiểm thử
+
+- `npm test`: engine, API, tài khoản/admin (PGlite trong bộ nhớ).
+- `TEST_DATABASE_URL=postgres://... npx vitest run test/account.test.ts`: chạy phần database trên PostgreSQL
+  thật (schema `public` của database đó bị **xoá sạch**, dùng database riêng cho test).
+- CI (`.github/workflows/server.yml`): typecheck, test, test trên Postgres, crossval 2000 ca, build;
+  push lên `dev`/`master` thì build và đẩy image lên `ghcr.io/<owner>/tu-vi-be`.
 
 ## Độ tin cậy của bản port
 

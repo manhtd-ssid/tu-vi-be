@@ -175,11 +175,17 @@ export interface Report {
 /** Luận 12 cung, trả {markdown, verdict, per_cung, ...} — dùng chung cho CLI và API. */
 export async function buildReport(
   chart: Chart, kb: KB | null = null, useLlm = false, llm: ia.LlmFn = ia.generateLlm,
+  /** Gọi ngay khi từng cung luận xong (đã qua Guardrail) — dùng cho API streaming. */
+  onCung?: (k: LuanCung) => void,
 ): Promise<Report> {
   const k = kb ?? loadKb();
   const cachCuc = "cuc" in chart ? nhanDienCachCuc(chart) : [];
   const cacCung = CANON.map((c) => timCung(chart, c)).filter((p): p is Palace => p !== undefined);
-  const ketQua = await mapLimit(cacCung, useLlm ? 6 : 1, (p) => luanCung(p, k, cachCuc, useLlm, llm));
+  const ketQua = await mapLimit(cacCung, useLlm ? 6 : 1, async (p) => {
+    const x = await luanCung(p, k, cachCuc, useLlm, llm);
+    onCung?.(x);
+    return x;
+  });
 
   const menh = timCung(chart, "Mệnh");
   const thanCung = chart.palaces.find((p) => p.is_than)?.cung ?? "?";

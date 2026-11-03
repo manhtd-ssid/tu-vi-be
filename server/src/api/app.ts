@@ -1,84 +1,96 @@
 /**
- * HTTP API tử vi (Fastify) — port từ src/service/api.py, giữ nguyên hợp đồng:
- *   GET  /health, GET /v1/meta
- *   POST /v1/la-so, /v1/luu-nien, /v1/luan-giai
- *   POST /chart, /interpret, GET /viewer   (tương thích laso_viewer.html)
- * Lỗi kiểu dữ liệu → 422 {detail: [...]}; lỗi giá trị (ngày không tồn tại...) → 400 {error}.
+ * HTTP API tử vi (Fastify).
+ *
+ * Nhóm route:
+ *   core   (routes/core.ts)   — lá số, lưu niên, luận giải (+ streaming), meta, viewer. Hợp đồng
+ *                               giữ nguyên bản Python src/service/api.py.
+ *   auth   (routes/auth.ts)   — đăng ký, đăng nhập (JWT), thông tin tài khoản.
+ *   charts (routes/charts.ts) — lá số đã lưu của người dùng.
+ *   admin  (routes/admin.ts)  — thống kê, người dùng, lá số, kho luận giải, log luận giải.
+ * Tài liệu OpenAPI: GET /docs.
+ * Lỗi kiểu dữ liệu → 422 {detail: [...]}; lỗi giá trị → 400 {error}; lỗi khác → {detail}.
  */
 import cors from "@fastify/cors";
+import fastifyJwt from "@fastify/jwt";
+import swagger from "@fastify/swagger";
+import swaggerUi from "@fastify/swagger-ui";
 import Fastify, { type FastifyInstance } from "fastify";
-import { timingSafeEqual } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import type { z } from "zod";
+import { randomBytes } from "node:crypto";
 import * as ia from "../agents/interpretation.js";
-import { loadKb, type KB } from "../agents/kb.js";
-import { buildReport, luanCung, type Report } from "../agents/orchestrator.js";
-import { nhanDienCachCuc } from "../engine/cachCuc.js";
-import { CHI, KINH_DO_TINH, chiCuaGio, quyDoiGio, type HieuChinhGio } from "../engine/thoiGian.js";
-import { InputError, lapLaSo, type Chart } from "../engine/tuviEngine.js";
-import * as vanHan from "../engine/vanHan.js";
-import { pysorted } from "../lib/py.js";
-import { LruCache } from "../lib/lru.js";
-import { BIRTH_KEYS, BirthInput, InterpretInput, ReportInput, YearInput } from "./schemas.js";
-
-const HERE = dirname(fileURLToPath(import.meta.url));
-const VIEWER = join(HERE, "..", "..", "data", "laso_viewer.html");
-
-class ValidationError extends Error {
-  constructor(public detail: unknown[]) {
-    super("validation error");
-  }
-}
-
-class HttpError extends Error {
-  constructor(public statusCode: number, public detail: string) {
-    super(detail);
-  }
-}
-
-function parse<S extends z.ZodType>(schema: S, body: unknown): z.infer<S> {
-  const r = schema.safeParse(body ?? {});
-  if (!r.success) {
-    throw new ValidationError(r.error.issues.map((i) => ({
-      type: i.code, loc: ["body", ...i.path], msg: i.message,
-    })));
-  }
-  return r.data;
-}
-
-function chartKey(body: BirthInput): string {
-  const o: Record<string, unknown> = {};
-  for (const k of BIRTH_KEYS) o[k] = body[k];
-  return JSON.stringify(o);
-}
-
-function apiKeyHopLe(given: string | undefined, expected: string): boolean {
-  const a = Buffer.from(given ?? "");
-  const b = Buffer.from(expected);
-  return a.length === b.length && timingSafeEqual(a, b);
-}
+import type { KB } from "../agents/kb.js";
+import { KbStore } from "../agents/kbStore.js";
+import { createDb, type Db } from "../db/index.js";
+import { InputError } from "../engine/tuviEngine.js";
+import { hashPassword } from "../lib/password.js";
+import { HttpError, ValidationError } from "./http.js";
+import { adminRoutes } from "./routes/admin.js";
+import { authRoutes } from "./routes/auth.js";
+import { chartRoutes } from "./routes/charts.js";
+import { coreRoutes } from "./routes/core.js";
+import { ChartService } from "./service.js";
 
 export interface AppOptions {
-  kb?: KB;
+  /** Database đã mở sẵn (test). Mặc định mở theo DATABASE_URL. */
+  db?: Db;
+  /** Dữ liệu seed kho luận giải khi database trống (mặc định data/kb.json). */
+  kbSeed?: () => KB;
   llm?: ia.LlmFn;
   logger?: boolean;
 }
 
-export async function buildApp(opts: AppOptions = {}): Promise<FastifyInstance> {
-  const kb = opts.kb ?? loadKb();
-  const llm = opts.llm ?? ia.generateLlm;
-  const chartCache = new LruCache<string, string>(2048);
-  const reportCache = new LruCache<string, Promise<Report>>(512);
+declare module "fastify" {
+  interface FastifyInstance {
+    svc: ChartService;
+    db: Db;
+  }
+}
 
-  const app = Fastify({ logger: opts.logger ?? false });
+function jwtSecret(log: FastifyInstance["log"]): string {
+  const s = process.env.JWT_SECRET;
+  if (s) return s;
+  if (process.env.NODE_ENV === "production") throw new Error("Thiếu JWT_SECRET trong môi trường production");
+  log.warn("JWT_SECRET chưa đặt — dùng khoá ngẫu nhiên, token mất hiệu lực khi khởi động lại");
+  return randomBytes(32).toString("hex");
+}
+
+/** Tạo/cập nhật tài khoản admin từ ADMIN_EMAIL + ADMIN_PASSWORD (nếu có). */
+async function bootstrapAdmin(db: Db): Promise<void> {
+  const email = process.env.ADMIN_EMAIL?.trim();
+  const pw = process.env.ADMIN_PASSWORD;
+  if (!email || !pw) return;
+  const hash = await hashPassword(pw);
+  await db.query(
+    `INSERT INTO users (email, name, password_hash, role) VALUES ($1, 'Admin', $2, 'admin')
+     ON CONFLICT ((lower(email))) DO UPDATE SET role = 'admin', password_hash = EXCLUDED.password_hash`,
+    [email, hash]);
+}
+
+export async function buildApp(opts: AppOptions = {}): Promise<FastifyInstance> {
+  const app = Fastify({ logger: opts.logger ?? false, bodyLimit: 1 << 20 });
+  const db = opts.db ?? (await createDb());
+  const kb = await KbStore.open(db, opts.kbSeed);
+  await bootstrapAdmin(db);
+  app.decorate("db", db);
+  app.decorate("svc", new ChartService(db, kb, opts.llm ?? ia.generateLlm, app.log));
+  if (!opts.db) app.addHook("onClose", async () => db.close());
+
   await app.register(cors, {
     origin: (process.env.CORS_ORIGINS ?? "http://localhost:3000,http://localhost:3001")
       .split(",").map((o) => o.trim()).filter(Boolean),
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: "*",
+    allowedHeaders: ["Content-Type", "Authorization", "X-API-Key"],
   });
+  await app.register(fastifyJwt, { secret: jwtSecret(app.log), sign: { expiresIn: process.env.JWT_EXPIRES_IN || "7d" } });
+
+  // Schema trên route chỉ để sinh tài liệu; validate thật do zod làm (lỗi 422 giống FastAPI).
+  app.setValidatorCompiler(() => (data) => ({ value: data }));
+  await app.register(swagger, {
+    openapi: {
+      info: { title: "Tử Vi API", version: "2.0.0", description: "Backend Tử Vi (Node.js). Lá số tất định, luận giải grounded + Guardrail." },
+      components: { securitySchemes: { bearer: { type: "http", scheme: "bearer" }, apiKey: { type: "apiKey", in: "header", name: "X-API-Key" } } },
+    },
+  });
+  await app.register(swaggerUi, { routePrefix: "/docs" });
 
   app.setErrorHandler((err, _req, reply) => {
     if (err instanceof ValidationError) return reply.status(422).send({ detail: err.detail });
@@ -90,91 +102,9 @@ export async function buildApp(opts: AppOptions = {}): Promise<FastifyInstance> 
     return reply.status(500).send({ detail: "Internal Server Error" });
   });
 
-  function tinhLaSo(body: BirthInput): Chart {
-    const key = chartKey(body);
-    const hit = chartCache.get(key);
-    if (hit) return JSON.parse(hit);
-    let hieuChinh: HieuChinhGio | null = null;
-    let { ngay, thang, nam, gio_sinh: gioSinh } = body;
-    if (body.gio !== null) {
-      if (body.duong_lich) {
-        const kd = body.tinh ? KINH_DO_TINH[body.tinh] : body.kinh_do;
-        const [q, hc] = quyDoiGio(ngay, thang, nam, body.gio, body.phut, kd, body.utc_offset_phut, body.quy_tac_ty);
-        hieuChinh = hc;
-        ({ ngay, thang, nam, gio_sinh: gioSinh } = q);
-      } else {
-        gioSinh = chiCuaGio(body.gio, body.phut);
-      }
-    }
-    const chart = lapLaSo(ngay, thang, nam, gioSinh as number, body.gioi_tinh, {
-      duongLich: body.duong_lich, thangNhuan: body.thang_nhuan, nhuanPolicy: body.nhuan_policy,
-    });
-    chart.hieu_chinh_gio = hieuChinh;
-    const s = JSON.stringify(chart);
-    chartCache.set(key, s);
-    return JSON.parse(s);
-  }
-
-  function baoCao(body: BirthInput, useLlm: boolean): Promise<Report> {
-    const key = chartKey(body) + "|" + useLlm;
-    let p = reportCache.get(key);
-    if (!p) {
-      p = buildReport(tinhLaSo(body), kb, useLlm, llm);
-      // không giữ lại kết quả lỗi trong cache
-      p.catch(() => reportCache.delete(key));
-      reportCache.set(key, p);
-    }
-    return p;
-  }
-
-  app.get("/health", async () => ({ status: "ok" }));
-
-  app.get("/v1/meta", async () => ({
-    gio: CHI.map((c, i) => ({ gio_sinh: i + 1, chi: c })),
-    tinh: pysorted(Object.keys(KINH_DO_TINH)),
-  }));
-
-  app.post("/v1/la-so", async (req) => {
-    const c = tinhLaSo(parse(BirthInput, req.body));
-    return { chart: c, dai_han: vanHan.danhSachDaiHan(c), cach_cuc: nhanDienCachCuc(c) };
-  });
-
-  app.post("/v1/luu-nien", async (req) => {
-    const body = parse(YearInput, req.body);
-    const c = tinhLaSo(body);
-    return { luu_nien: vanHan.luuNien(c, body.nam_xem), luu_nguyet: vanHan.luuNguyet(c, body.nam_xem) };
-  });
-
-  app.post("/v1/luan-giai", async (req) => {
-    const body = parse(ReportInput, req.body);
-    if (body.use_llm) {
-      // chỉ bản LLM tốn tiền
-      const can = process.env.API_KEY;
-      const given = req.headers["x-api-key"];
-      if (can && !apiKeyHopLe(typeof given === "string" ? given : undefined, can)) throw new HttpError(401, "Sai API key");
-    }
-    tinhLaSo(body);
-    return baoCao(body, body.use_llm);
-  });
-
-  // ---- Tương thích laso_viewer.html ----
-  app.post("/chart", async (req) => tinhLaSo(parse(BirthInput, req.body)));
-
-  app.post("/interpret", async (req) => {
-    const body = parse(InterpretInput, req.body);
-    const c = tinhLaSo(body);
-    const pal = c.palaces.find((p) => ia.norm(String(p.cung)) === ia.norm(body.cung));
-    if (!pal) throw new InputError("Không có cung " + body.cung);
-    const k = await luanCung(pal, kb, nhanDienCachCuc(c));
-    const g = k.guardrail;
-    return {
-      interpretation: k.text,
-      sources: k.chunks.map((x) => ({ id: x.id, label: x.source + " — " + x.field })),
-      guardrail: { passed: g.passed, fail: g.fail, verdict: g.passed === g.total ? "ĐẠT" : "CẢNH BÁO" },
-    };
-  });
-
-  app.get("/viewer", async (_req, reply) => reply.type("text/html; charset=utf-8").send(readFileSync(VIEWER)));
-
+  await app.register(coreRoutes);
+  await app.register(authRoutes);
+  await app.register(chartRoutes);
+  await app.register(adminRoutes);
   return app;
 }
