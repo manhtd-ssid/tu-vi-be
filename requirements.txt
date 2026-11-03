@@ -1,0 +1,6 @@
+# Engine lasotuvi đã vendored. API:
+fastapi>=0.110
+uvicorn>=0.29
+# LLM (tuỳ chọn):
+anthropic>=0.30
+openai>=1.30

@@ -1,0 +1,31 @@
+{
+  "verdict": "ĐẠT — cho phép hiển thị",
+  "passed": "5/5",
+  "checks": [
+    {
+      "check": "C1 · trích dẫn hợp lệ",
+      "pass": true,
+      "detail": "20 trích dẫn, 0 không hợp lệ"
+    },
+    {
+      "check": "C2 · độ phủ trích dẫn",
+      "pass": true,
+      "detail": "5 mục nội dung, 0 mục thiếu trích dẫn"
+    },
+    {
+      "check": "C3 · không mâu thuẫn miếu/hãm",
+      "pass": true,
+      "detail": "không phát hiện mâu thuẫn"
+    },
+    {
+      "check": "C4 · không bịa sao ngoài nguồn",
+      "pass": true,
+      "detail": "mọi chính tinh nêu ra đều có trong nguồn"
+    },
+    {
+      "check": "C5 · có disclaimer",
+      "pass": true,
+      "detail": "có nhắc tính tham khảo"
+    }
+  ]
+}

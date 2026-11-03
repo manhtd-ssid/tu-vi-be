@@ -1,0 +1,19 @@
+{
+  "name": "crossval",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "lunar-javascript": "^1.7.7",
+    "tsx": "^4.23.0"
+  },
+  "devDependencies": {
+    "iztro": "^2.5.8"
+  }
+}

@@ -1,0 +1,1163 @@
+[
+  {
+    "key": "15/8/1990-g7",
+    "lunarDate": {
+      "year": 1990,
+      "month": 6,
+      "day": 25,
+      "isLeapMonth": false
+    },
+    "heavenlyStem": "Canh",
+    "earthlyBranch": "Ngọ",
+    "element": "Thổ",
+    "palaces": [
+      {
+        "name": "Mệnh",
+        "position": 1,
+        "element": "Thổ",
+        "main": [
+          "Thiên Đồng",
+          "Cự Môn"
+        ],
+        "secondary": [
+          "Thiên Giải",
+          "Thiên Khôi",
+          "Hóa Kỵ",
+          "Long Đức",
+          "Tấu Thư",
+          "Dưỡng"
+        ]
+      },
+      {
+        "name": "Phụ Mẫu",
+        "position": 2,
+        "element": "Mộc",
+        "main": [
+          "Vũ Khúc",
+          "Thiên Tướng"
+        ],
+        "secondary": [
+          "Thiên Hình",
+          "Thiên Trù",
+          "Hóa Quyền",
+          "Bạch Hổ",
+          "Phi Liêm",
+          "Tràng Sinh"
+        ]
+      },
+      {
+        "name": "Phúc Đức",
+        "position": 3,
+        "element": "Mộc",
+        "main": [
+          "Thái Dương",
+          "Thiên Lương"
+        ],
+        "secondary": [
+          "Ân Quang",
+          "Hóa Lộc",
+          "Phúc Đức",
+          "Đào Hoa",
+          "Thiên Hỷ",
+          "Thiên Đức",
+          "Hỷ Thần",
+          "Mộc Dục"
+        ]
+      },
+      {
+        "name": "Điền Trạch",
+        "position": 4,
+        "element": "Thổ",
+        "main": [
+          "Thất Sát"
+        ],
+        "secondary": [
+          "Văn Xương",
+          "Điếu Khách",
+          "Quả Tú",
+          "Phượng Các",
+          "Giải Thần",
+          "Quốc Ấn",
+          "Bệnh Phù",
+          "Quan Đới",
+          "Thiên La"
+        ]
+      },
+      {
+        "name": "Quan Lộc",
+        "position": 5,
+        "element": "Hỏa",
+        "main": [
+          "Thiên Cơ"
+        ],
+        "secondary": [
+          "Địa Kiếp",
+          "Địa Không",
+          "Hữu Bật",
+          "Bát Tọa",
+          "Trực Phù",
+          "Phá Toái",
+          "Đại Hao",
+          "Lâm Quan",
+          "Thiên Thương",
+          "Thiên Tài",
+          "Thiên Thọ"
+        ]
+      },
+      {
+        "name": "Nô Bộc",
+        "position": 6,
+        "element": "Hỏa",
+        "main": [
+          "Tử Vi"
+        ],
+        "secondary": [
+          "Thiên Riêu",
+          "Thiên Y",
+          "Thái Tuế",
+          "Thiên Phúc",
+          "Phục Binh",
+          "Đế Vượng",
+          "Triệt",
+          "Thiên Thương"
+        ]
+      },
+      {
+        "name": "Thiên Di",
+        "position": 7,
+        "element": "Thổ",
+        "main": [],
+        "secondary": [
+          "Thiên Việt",
+          "Thiếu Dương",
+          "Hỏa Tinh",
+          "Quan Phủ",
+          "Đà La",
+          "Suy",
+          "Triệt"
+        ]
+      },
+      {
+        "name": "Tật Ách",
+        "position": 8,
+        "element": "Kim",
+        "main": [
+          "Phá Quân"
+        ],
+        "secondary": [
+          "Phong Cáo",
+          "Lưu Hà",
+          "Tang Môn",
+          "Thiên Mã",
+          "Cô Thần",
+          "Lộc Tồn",
+          "Bác Sỹ",
+          "Bệnh",
+          "Thiên Sứ"
+        ]
+      },
+      {
+        "name": "Tài Bạch",
+        "position": 9,
+        "element": "Kim",
+        "main": [],
+        "secondary": [
+          "Tả Phụ",
+          "Tam Thai",
+          "Thiếu Âm",
+          "Linh Tinh",
+          "Hồng Loan",
+          "Lực Sĩ",
+          "Kình Dương",
+          "Tử"
+        ]
+      },
+      {
+        "name": "Tử Tức",
+        "position": 10,
+        "element": "Thổ",
+        "main": [
+          "Liêm Trinh",
+          "Thiên Phủ"
+        ],
+        "secondary": [
+          "Văn Khúc",
+          "Quan Phù (TT)",
+          "Hoa Cái",
+          "Long Trì",
+          "Thanh Long",
+          "Mộ",
+          "Tuần",
+          "Địa Võng"
+        ]
+      },
+      {
+        "name": "Phu Thê",
+        "position": 11,
+        "element": "Thủy",
+        "main": [
+          "Thái Âm"
+        ],
+        "secondary": [
+          "Thiên Quý",
+          "Hóa Khoa",
+          "Tử Phù",
+          "Kiếp Sát",
+          "Nguyệt Đức",
+          "Thiên Quan",
+          "Tiểu Hao",
+          "Tuyệt",
+          "Tuần"
+        ]
+      },
+      {
+        "name": "Huynh Đệ",
+        "position": 0,
+        "element": "Thủy",
+        "main": [
+          "Tham Lang"
+        ],
+        "secondary": [
+          "Thai Phụ",
+          "Địa Giải",
+          "Tuế Phá",
+          "Thiên Khốc",
+          "Thiên Hư",
+          "Đường Phù",
+          "Tướng Quân",
+          "Thai"
+        ]
+      }
+    ]
+  },
+  {
+    "key": "1/1/2000-g1",
+    "lunarDate": {
+      "year": 1999,
+      "month": 11,
+      "day": 25,
+      "isLeapMonth": false
+    },
+    "heavenlyStem": "Kỷ",
+    "earthlyBranch": "Mão",
+    "element": "Thổ",
+    "palaces": [
+      {
+        "name": "Mệnh",
+        "position": 0,
+        "element": "Thủy",
+        "main": [
+          "Phá Quân"
+        ],
+        "secondary": [
+          "Hữu Bật",
+          "Bát Tọa",
+          "Thiên Khôi",
+          "Phúc Đức",
+          "Đào Hoa",
+          "Hồng Loan",
+          "Thiên Đức",
+          "Phi Liêm",
+          "Đế Vượng"
+        ]
+      },
+      {
+        "name": "Phụ Mẫu",
+        "position": 1,
+        "element": "Thổ",
+        "main": [
+          "Thiên Cơ"
+        ],
+        "secondary": [
+          "Điếu Khách",
+          "Quả Tú",
+          "Hỷ Thần",
+          "Suy",
+          "Thiên Tài",
+          "Thiên Thọ"
+        ]
+      },
+      {
+        "name": "Phúc Đức",
+        "position": 2,
+        "element": "Mộc",
+        "main": [
+          "Tử Vi",
+          "Thiên Phủ"
+        ],
+        "secondary": [
+          "Phong Cáo",
+          "Tả Phụ",
+          "Tam Thai",
+          "Trực Phù",
+          "Thiên Phúc",
+          "Quốc Ấn",
+          "Bệnh Phù",
+          "Bệnh"
+        ]
+      },
+      {
+        "name": "Điền Trạch",
+        "position": 3,
+        "element": "Mộc",
+        "main": [
+          "Thái Âm"
+        ],
+        "secondary": [
+          "Thái Tuế",
+          "Thiên Khốc",
+          "Đại Hao",
+          "Tử"
+        ]
+      },
+      {
+        "name": "Quan Lộc",
+        "position": 4,
+        "element": "Thổ",
+        "main": [
+          "Tham Lang"
+        ],
+        "secondary": [
+          "Văn Khúc",
+          "Hóa Quyền",
+          "Hóa Kỵ",
+          "Thiếu Dương",
+          "Phục Binh",
+          "Mộ",
+          "Thiên La"
+        ]
+      },
+      {
+        "name": "Nô Bộc",
+        "position": 5,
+        "element": "Hỏa",
+        "main": [
+          "Cự Môn"
+        ],
+        "secondary": [
+          "Địa Giải",
+          "Thiên Quý",
+          "Tang Môn",
+          "Thiên Mã",
+          "Phá Toái",
+          "Cô Thần",
+          "Quan Phủ",
+          "Đà La",
+          "Tuyệt",
+          "Thiên Thương",
+          "Thiên Thương"
+        ]
+      },
+      {
+        "name": "Thiên Di",
+        "position": 6,
+        "element": "Hỏa",
+        "main": [
+          "Liêm Trinh",
+          "Thiên Tướng"
+        ],
+        "secondary": [
+          "Thai Phụ",
+          "Thiên Giải",
+          "Lưu Hà",
+          "Thiếu Âm",
+          "Thiên Hỷ",
+          "Lộc Tồn",
+          "Bác Sỹ",
+          "Thai"
+        ]
+      },
+      {
+        "name": "Tật Ách",
+        "position": 7,
+        "element": "Thổ",
+        "main": [
+          "Thiên Lương"
+        ],
+        "secondary": [
+          "Thiên Hình",
+          "Hóa Khoa",
+          "Quan Phù (TT)",
+          "Hoa Cái",
+          "Long Trì",
+          "Phượng Các",
+          "Giải Thần",
+          "Lực Sĩ",
+          "Kình Dương",
+          "Dưỡng",
+          "Thiên Sứ"
+        ]
+      },
+      {
+        "name": "Tài Bạch",
+        "position": 8,
+        "element": "Kim",
+        "main": [
+          "Thất Sát"
+        ],
+        "secondary": [
+          "Thiên Việt",
+          "Thiên Trù",
+          "Tử Phù",
+          "Kiếp Sát",
+          "Nguyệt Đức",
+          "Thanh Long",
+          "Tràng Sinh",
+          "Tuần",
+          "Triệt"
+        ]
+      },
+      {
+        "name": "Tử Tức",
+        "position": 9,
+        "element": "Kim",
+        "main": [
+          "Thiên Đồng"
+        ],
+        "secondary": [
+          "Ân Quang",
+          "Tuế Phá",
+          "Hỏa Tinh",
+          "Thiên Hư",
+          "Thiên Quan",
+          "Tiểu Hao",
+          "Mộc Dục",
+          "Tuần",
+          "Triệt"
+        ]
+      },
+      {
+        "name": "Phu Thê",
+        "position": 10,
+        "element": "Thổ",
+        "main": [
+          "Vũ Khúc"
+        ],
+        "secondary": [
+          "Văn Xương",
+          "Hóa Lộc",
+          "Long Đức",
+          "Linh Tinh",
+          "Đường Phù",
+          "Tướng Quân",
+          "Quan Đới",
+          "Địa Võng"
+        ]
+      },
+      {
+        "name": "Huynh Đệ",
+        "position": 11,
+        "element": "Thủy",
+        "main": [
+          "Thái Dương"
+        ],
+        "secondary": [
+          "Địa Kiếp",
+          "Địa Không",
+          "Thiên Riêu",
+          "Thiên Y",
+          "Bạch Hổ",
+          "Tấu Thư",
+          "Lâm Quan"
+        ]
+      }
+    ]
+  },
+  {
+    "key": "29/12/1985-g12",
+    "lunarDate": {
+      "year": 1985,
+      "month": 11,
+      "day": 18,
+      "isLeapMonth": false
+    },
+    "heavenlyStem": "Ất",
+    "earthlyBranch": "Sửu",
+    "element": "Kim",
+    "palaces": [
+      {
+        "name": "Mệnh",
+        "position": 1,
+        "element": "Thổ",
+        "main": [
+          "Thái Dương",
+          "Thái Âm"
+        ],
+        "secondary": [
+          "Phong Cáo",
+          "Hóa Kỵ",
+          "Thái Tuế",
+          "Hoa Cái",
+          "Phá Toái",
+          "Thanh Long",
+          "Mộc Dục"
+        ]
+      },
+      {
+        "name": "Phụ Mẫu",
+        "position": 2,
+        "element": "Mộc",
+        "main": [
+          "Tham Lang"
+        ],
+        "secondary": [
+          "Tả Phụ",
+          "Thiếu Dương",
+          "Hỏa Tinh",
+          "Kiếp Sát",
+          "Cô Thần",
+          "Hồng Loan",
+          "Lực Sĩ",
+          "Đà La",
+          "Tràng Sinh"
+        ]
+      },
+      {
+        "name": "Phúc Đức",
+        "position": 3,
+        "element": "Mộc",
+        "main": [
+          "Thiên Cơ",
+          "Cự Môn"
+        ],
+        "secondary": [
+          "Văn Khúc",
+          "Ân Quang",
+          "Hóa Lộc",
+          "Tang Môn",
+          "Lộc Tồn",
+          "Bác Sỹ",
+          "Dưỡng"
+        ]
+      },
+      {
+        "name": "Điền Trạch",
+        "position": 4,
+        "element": "Thổ",
+        "main": [
+          "Tử Vi",
+          "Thiên Tướng"
+        ],
+        "secondary": [
+          "Hóa Khoa",
+          "Thiếu Âm",
+          "Thiên Quan",
+          "Quan Phủ",
+          "Kình Dương",
+          "Thai",
+          "Thiên La"
+        ]
+      },
+      {
+        "name": "Quan Lộc",
+        "position": 5,
+        "element": "Hỏa",
+        "main": [
+          "Thiên Lương"
+        ],
+        "secondary": [
+          "Thai Phụ",
+          "Địa Giải",
+          "Hóa Quyền",
+          "Quan Phù (TT)",
+          "Thiên Khốc",
+          "Long Trì",
+          "Phục Binh",
+          "Tuyệt",
+          "Thiên Thương"
+        ]
+      },
+      {
+        "name": "Nô Bộc",
+        "position": 6,
+        "element": "Hỏa",
+        "main": [
+          "Thất Sát"
+        ],
+        "secondary": [
+          "Thiên Giải",
+          "Thiên Trù",
+          "Tử Phù",
+          "Đào Hoa",
+          "Nguyệt Đức",
+          "Đại Hao",
+          "Mộ",
+          "Triệt",
+          "Thiên Thương"
+        ]
+      },
+      {
+        "name": "Thiên Di",
+        "position": 7,
+        "element": "Thổ",
+        "main": [],
+        "secondary": [
+          "Thiên Hình",
+          "Tam Thai",
+          "Bát Tọa",
+          "Tuế Phá",
+          "Thiên Hư",
+          "Đường Phù",
+          "Bệnh Phù",
+          "Tử",
+          "Triệt"
+        ]
+      },
+      {
+        "name": "Tật Ách",
+        "position": 8,
+        "element": "Kim",
+        "main": [
+          "Liêm Trinh"
+        ],
+        "secondary": [
+          "Thiên Việt",
+          "Long Đức",
+          "Thiên Hỷ",
+          "Thiên Phúc",
+          "Hỷ Thần",
+          "Bệnh",
+          "Thiên Sứ"
+        ]
+      },
+      {
+        "name": "Tài Bạch",
+        "position": 9,
+        "element": "Kim",
+        "main": [],
+        "secondary": [
+          "Bạch Hổ",
+          "Phượng Các",
+          "Giải Thần",
+          "Phi Liêm",
+          "Suy"
+        ]
+      },
+      {
+        "name": "Tử Tức",
+        "position": 10,
+        "element": "Thổ",
+        "main": [
+          "Phá Quân"
+        ],
+        "secondary": [
+          "Địa Kiếp",
+          "Lưu Hà",
+          "Phúc Đức",
+          "Quả Tú",
+          "Thiên Đức",
+          "Tấu Thư",
+          "Đế Vượng",
+          "Tuần",
+          "Địa Võng",
+          "Thiên Thọ"
+        ]
+      },
+      {
+        "name": "Phu Thê",
+        "position": 11,
+        "element": "Thủy",
+        "main": [
+          "Thiên Đồng"
+        ],
+        "secondary": [
+          "Văn Xương",
+          "Thiên Riêu",
+          "Thiên Y",
+          "Thiên Quý",
+          "Điếu Khách",
+          "Linh Tinh",
+          "Thiên Mã",
+          "Quốc Ấn",
+          "Tướng Quân",
+          "Lâm Quan",
+          "Tuần"
+        ]
+      },
+      {
+        "name": "Huynh Đệ",
+        "position": 0,
+        "element": "Thủy",
+        "main": [
+          "Vũ Khúc",
+          "Thiên Phủ"
+        ],
+        "secondary": [
+          "Địa Không",
+          "Hữu Bật",
+          "Thiên Khôi",
+          "Trực Phù",
+          "Tiểu Hao",
+          "Quan Đới",
+          "Thiên Tài"
+        ]
+      }
+    ]
+  },
+  {
+    "key": "10/6/1975-g5",
+    "lunarDate": {
+      "year": 1975,
+      "month": 5,
+      "day": 1,
+      "isLeapMonth": false
+    },
+    "heavenlyStem": "Ất",
+    "earthlyBranch": "Mão",
+    "element": "Thủy",
+    "palaces": [
+      {
+        "name": "Mệnh",
+        "position": 2,
+        "element": "Mộc",
+        "main": [
+          "Tử Vi",
+          "Thiên Phủ"
+        ],
+        "secondary": [
+          "Hóa Khoa",
+          "Trực Phù",
+          "Quan Phủ",
+          "Đà La",
+          "Bệnh"
+        ]
+      },
+      {
+        "name": "Phụ Mẫu",
+        "position": 3,
+        "element": "Mộc",
+        "main": [
+          "Thái Âm"
+        ],
+        "secondary": [
+          "Địa Kiếp",
+          "Hóa Kỵ",
+          "Thái Tuế",
+          "Thiên Khốc",
+          "Lộc Tồn",
+          "Bác Sỹ",
+          "Tử",
+          "Thiên Tài"
+        ]
+      },
+      {
+        "name": "Phúc Đức",
+        "position": 4,
+        "element": "Thổ",
+        "main": [
+          "Tham Lang"
+        ],
+        "secondary": [
+          "Thiếu Dương",
+          "Thiên Quan",
+          "Lực Sĩ",
+          "Kình Dương",
+          "Mộ",
+          "Thiên La"
+        ]
+      },
+      {
+        "name": "Điền Trạch",
+        "position": 5,
+        "element": "Hỏa",
+        "main": [
+          "Cự Môn"
+        ],
+        "secondary": [
+          "Thiên Riêu",
+          "Thiên Y",
+          "Ân Quang",
+          "Tang Môn",
+          "Thiên Mã",
+          "Phá Toái",
+          "Cô Thần",
+          "Thanh Long",
+          "Tuyệt",
+          "Thiên Thương"
+        ]
+      },
+      {
+        "name": "Quan Lộc",
+        "position": 6,
+        "element": "Hỏa",
+        "main": [
+          "Liêm Trinh",
+          "Thiên Tướng"
+        ],
+        "secondary": [
+          "Văn Xương",
+          "Phong Cáo",
+          "Hữu Bật",
+          "Bát Tọa",
+          "Thiên Trù",
+          "Thiếu Âm",
+          "Linh Tinh",
+          "Thiên Hỷ",
+          "Tiểu Hao",
+          "Thai",
+          "Triệt"
+        ]
+      },
+      {
+        "name": "Nô Bộc",
+        "position": 7,
+        "element": "Thổ",
+        "main": [
+          "Thiên Lương"
+        ],
+        "secondary": [
+          "Địa Không",
+          "Hóa Quyền",
+          "Quan Phù (TT)",
+          "Hoa Cái",
+          "Long Trì",
+          "Phượng Các",
+          "Giải Thần",
+          "Đường Phù",
+          "Tướng Quân",
+          "Dưỡng",
+          "Triệt",
+          "Thiên Thương"
+        ]
+      },
+      {
+        "name": "Thiên Di",
+        "position": 8,
+        "element": "Kim",
+        "main": [
+          "Thất Sát"
+        ],
+        "secondary": [
+          "Văn Khúc",
+          "Tả Phụ",
+          "Tam Thai",
+          "Thiên Việt",
+          "Tử Phù",
+          "Kiếp Sát",
+          "Nguyệt Đức",
+          "Thiên Phúc",
+          "Tấu Thư",
+          "Tràng Sinh"
+        ]
+      },
+      {
+        "name": "Tật Ách",
+        "position": 9,
+        "element": "Kim",
+        "main": [
+          "Thiên Đồng"
+        ],
+        "secondary": [
+          "Thiên Quý",
+          "Tuế Phá",
+          "Thiên Hư",
+          "Phi Liêm",
+          "Mộc Dục",
+          "Thiên Sứ"
+        ]
+      },
+      {
+        "name": "Tài Bạch",
+        "position": 10,
+        "element": "Thổ",
+        "main": [
+          "Vũ Khúc"
+        ],
+        "secondary": [
+          "Thai Phụ",
+          "Lưu Hà",
+          "Long Đức",
+          "Hỷ Thần",
+          "Quan Đới",
+          "Địa Võng"
+        ]
+      },
+      {
+        "name": "Tử Tức",
+        "position": 11,
+        "element": "Thủy",
+        "main": [
+          "Thái Dương"
+        ],
+        "secondary": [
+          "Địa Giải",
+          "Bạch Hổ",
+          "Quốc Ấn",
+          "Bệnh Phù",
+          "Lâm Quan",
+          "Thiên Thọ"
+        ]
+      },
+      {
+        "name": "Phu Thê",
+        "position": 0,
+        "element": "Thủy",
+        "main": [
+          "Phá Quân"
+        ],
+        "secondary": [
+          "Thiên Giải",
+          "Thiên Khôi",
+          "Phúc Đức",
+          "Đào Hoa",
+          "Hồng Loan",
+          "Thiên Đức",
+          "Đại Hao",
+          "Đế Vượng",
+          "Tuần"
+        ]
+      },
+      {
+        "name": "Huynh Đệ",
+        "position": 1,
+        "element": "Thổ",
+        "main": [
+          "Thiên Cơ"
+        ],
+        "secondary": [
+          "Thiên Hình",
+          "Hóa Lộc",
+          "Điếu Khách",
+          "Hỏa Tinh",
+          "Quả Tú",
+          "Phục Binh",
+          "Suy",
+          "Tuần"
+        ]
+      }
+    ]
+  },
+  {
+    "key": "20/3/2010-g9",
+    "lunarDate": {
+      "year": 2010,
+      "month": 2,
+      "day": 5,
+      "isLeapMonth": false
+    },
+    "heavenlyStem": "Canh",
+    "earthlyBranch": "Dần",
+    "element": "Mộc",
+    "palaces": [
+      {
+        "name": "Mệnh",
+        "position": 7,
+        "element": "Thổ",
+        "main": [
+          "Thiên Lương"
+        ],
+        "secondary": [
+          "Địa Kiếp",
+          "Thiên Việt",
+          "Tử Phù",
+          "Linh Tinh",
+          "Thiên Hỷ",
+          "Nguyệt Đức",
+          "Quan Phủ",
+          "Đà La",
+          "Mộ",
+          "Tuần",
+          "Triệt",
+          "Thiên Tài"
+        ]
+      },
+      {
+        "name": "Phụ Mẫu",
+        "position": 8,
+        "element": "Kim",
+        "main": [
+          "Thất Sát"
+        ],
+        "secondary": [
+          "Địa Giải",
+          "Lưu Hà",
+          "Tuế Phá",
+          "Thiên Mã",
+          "Thiên Hư",
+          "Phượng Các",
+          "Giải Thần",
+          "Lộc Tồn",
+          "Bác Sỹ",
+          "Tuyệt"
+        ]
+      },
+      {
+        "name": "Phúc Đức",
+        "position": 9,
+        "element": "Kim",
+        "main": [
+          "Thiên Đồng"
+        ],
+        "secondary": [
+          "Hữu Bật",
+          "Thiên Giải",
+          "Tam Thai",
+          "Thiên Quý",
+          "Hóa Kỵ",
+          "Long Đức",
+          "Hỏa Tinh",
+          "Phá Toái",
+          "Lực Sĩ",
+          "Kình Dương",
+          "Thai"
+        ]
+      },
+      {
+        "name": "Điền Trạch",
+        "position": 10,
+        "element": "Thổ",
+        "main": [
+          "Vũ Khúc"
+        ],
+        "secondary": [
+          "Phong Cáo",
+          "Thiên Hình",
+          "Hóa Quyền",
+          "Bạch Hổ",
+          "Hoa Cái",
+          "Thanh Long",
+          "Dưỡng",
+          "Địa Võng"
+        ]
+      },
+      {
+        "name": "Quan Lộc",
+        "position": 11,
+        "element": "Thủy",
+        "main": [
+          "Thái Dương"
+        ],
+        "secondary": [
+          "Hóa Lộc",
+          "Phúc Đức",
+          "Kiếp Sát",
+          "Thiên Đức",
+          "Thiên Quan",
+          "Tiểu Hao",
+          "Tràng Sinh",
+          "Thiên Thọ"
+        ]
+      },
+      {
+        "name": "Nô Bộc",
+        "position": 0,
+        "element": "Thủy",
+        "main": [
+          "Phá Quân"
+        ],
+        "secondary": [
+          "Văn Khúc",
+          "Điếu Khách",
+          "Đường Phù",
+          "Tướng Quân",
+          "Mộc Dục",
+          "Thiên Thương"
+        ]
+      },
+      {
+        "name": "Thiên Di",
+        "position": 1,
+        "element": "Thổ",
+        "main": [
+          "Thiên Cơ"
+        ],
+        "secondary": [
+          "Thiên Khôi",
+          "Trực Phù",
+          "Quả Tú",
+          "Hồng Loan",
+          "Tấu Thư",
+          "Quan Đới"
+        ]
+      },
+      {
+        "name": "Tật Ách",
+        "position": 2,
+        "element": "Mộc",
+        "main": [
+          "Tử Vi",
+          "Thiên Phủ"
+        ],
+        "secondary": [
+          "Văn Xương",
+          "Thai Phụ",
+          "Thiên Riêu",
+          "Thiên Y",
+          "Thiên Trù",
+          "Thái Tuế",
+          "Phi Liêm",
+          "Lâm Quan",
+          "Thiên Sứ"
+        ]
+      },
+      {
+        "name": "Tài Bạch",
+        "position": 3,
+        "element": "Mộc",
+        "main": [
+          "Thái Âm"
+        ],
+        "secondary": [
+          "Địa Không",
+          "Hóa Khoa",
+          "Thiếu Dương",
+          "Đào Hoa",
+          "Hỷ Thần",
+          "Đế Vượng"
+        ]
+      },
+      {
+        "name": "Tử Tức",
+        "position": 4,
+        "element": "Thổ",
+        "main": [
+          "Tham Lang"
+        ],
+        "secondary": [
+          "Tang Môn",
+          "Thiên Khốc",
+          "Quốc Ấn",
+          "Bệnh Phù",
+          "Suy",
+          "Thiên La"
+        ]
+      },
+      {
+        "name": "Phu Thê",
+        "position": 5,
+        "element": "Hỏa",
+        "main": [
+          "Cự Môn"
+        ],
+        "secondary": [
+          "Tả Phụ",
+          "Bát Tọa",
+          "Ân Quang",
+          "Thiếu Âm",
+          "Cô Thần",
+          "Đại Hao",
+          "Bệnh",
+          "Thiên Thương"
+        ]
+      },
+      {
+        "name": "Huynh Đệ",
+        "position": 6,
+        "element": "Hỏa",
+        "main": [
+          "Liêm Trinh",
+          "Thiên Tướng"
+        ],
+        "secondary": [
+          "Quan Phù (TT)",
+          "Long Trì",
+          "Thiên Phúc",
+          "Phục Binh",
+          "Tử",
+          "Tuần",
+          "Triệt"
+        ]
+      }
+    ]
+  }
+]

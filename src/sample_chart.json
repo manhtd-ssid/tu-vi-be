@@ -1,0 +1,765 @@
+{
+  "input": {
+    "ngay": 15,
+    "thang": 8,
+    "nam": 1990,
+    "gio_sinh": 7,
+    "gioi_tinh": 1,
+    "duong_lich": true,
+    "time_zone": 7
+  },
+  "menh_index": 2,
+  "than_index": 2,
+  "palaces": [
+    {
+      "branch": "Tý",
+      "cung": "Huynh đệ",
+      "is_than": false,
+      "am_duong": 1,
+      "stars": [
+        {
+          "name": "Thiên cơ",
+          "nguHanh": "M",
+          "loai": 1,
+          "amDuong": -1
+        },
+        {
+          "name": "Tướng quân",
+          "nguHanh": "M",
+          "loai": 4,
+          "amDuong": ""
+        },
+        {
+          "name": "Tuế phá",
+          "nguHanh": "H",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Dưỡng",
+          "nguHanh": "M",
+          "loai": 2,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên hư",
+          "nguHanh": "T",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên khốc",
+          "nguHanh": "T",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Thai phụ",
+          "nguHanh": "K",
+          "loai": 6,
+          "amDuong": ""
+        },
+        {
+          "name": "Địa giải",
+          "nguHanh": "O",
+          "loai": 5,
+          "amDuong": ""
+        }
+      ]
+    },
+    {
+      "branch": "Sửu",
+      "cung": "Mệnh",
+      "is_than": true,
+      "am_duong": -1,
+      "stars": [
+        {
+          "name": "Tử vi",
+          "nguHanh": "O",
+          "loai": 1,
+          "amDuong": 1
+        },
+        {
+          "name": "Phá quân",
+          "nguHanh": "T",
+          "loai": 1,
+          "amDuong": -1
+        },
+        {
+          "name": "Tấu thư",
+          "nguHanh": "K",
+          "loai": 3,
+          "amDuong": ""
+        },
+        {
+          "name": "Long đức",
+          "nguHanh": "T",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Thai",
+          "nguHanh": "O",
+          "loai": 14,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên việt",
+          "nguHanh": "H",
+          "loai": 6,
+          "amDuong": ""
+        },
+        {
+          "name": "Đường phù",
+          "nguHanh": "M",
+          "loai": 4,
+          "amDuong": ""
+        }
+      ]
+    },
+    {
+      "branch": "Dần",
+      "cung": "Phụ mẫu",
+      "is_than": false,
+      "am_duong": 1,
+      "stars": [
+        {
+          "name": "Phi liêm",
+          "nguHanh": "H",
+          "loai": 2,
+          "amDuong": ""
+        },
+        {
+          "name": "Bạch hổ",
+          "nguHanh": "K",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Tràng sinh",
+          "nguHanh": "T",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên hình",
+          "nguHanh": "H",
+          "loai": 15,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên trù",
+          "nguHanh": "O",
+          "loai": 5,
+          "amDuong": ""
+        }
+      ]
+    },
+    {
+      "branch": "Mão",
+      "cung": "Phúc đức",
+      "is_than": false,
+      "am_duong": -1,
+      "stars": [
+        {
+          "name": "Thiên phủ",
+          "nguHanh": "O",
+          "loai": 1,
+          "amDuong": 1
+        },
+        {
+          "name": "Hỷ thần",
+          "nguHanh": "H",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Phúc đức",
+          "nguHanh": "O",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên đức",
+          "nguHanh": "H",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Mộc dục",
+          "nguHanh": "T",
+          "loai": 14,
+          "amDuong": ""
+        },
+        {
+          "name": "Ân quang",
+          "nguHanh": "M",
+          "loai": 3,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên hỷ",
+          "nguHanh": "T",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Đào hoa",
+          "nguHanh": "M",
+          "loai": 8,
+          "amDuong": ""
+        }
+      ]
+    },
+    {
+      "branch": "Thìn",
+      "cung": "Điền trạch",
+      "is_than": false,
+      "am_duong": 1,
+      "stars": [
+        {
+          "name": "Thái âm",
+          "nguHanh": "T",
+          "loai": 1,
+          "amDuong": -1
+        },
+        {
+          "name": "Bệnh phù",
+          "nguHanh": "O",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Điếu khách",
+          "nguHanh": "H",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Quan đới",
+          "nguHanh": "K",
+          "loai": 4,
+          "amDuong": ""
+        },
+        {
+          "name": "Phượng các",
+          "nguHanh": "O",
+          "loai": 3,
+          "amDuong": ""
+        },
+        {
+          "name": "Giải thần",
+          "nguHanh": "M",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Văn xương",
+          "nguHanh": "K",
+          "loai": 6,
+          "amDuong": ""
+        },
+        {
+          "name": "Quả tú",
+          "nguHanh": "O",
+          "loai": 13,
+          "amDuong": ""
+        },
+        {
+          "name": "Quốc ấn",
+          "nguHanh": "O",
+          "loai": 6,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên la",
+          "nguHanh": "O",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Hóa kỵ",
+          "nguHanh": "T",
+          "loai": 13,
+          "amDuong": ""
+        }
+      ]
+    },
+    {
+      "branch": "Tỵ",
+      "cung": "Quan lộc",
+      "is_than": false,
+      "am_duong": -1,
+      "stars": [
+        {
+          "name": "Liêm trinh",
+          "nguHanh": "H",
+          "loai": 1,
+          "amDuong": 1
+        },
+        {
+          "name": "Tham lang",
+          "nguHanh": "T",
+          "loai": 1,
+          "amDuong": -1
+        },
+        {
+          "name": "Đại hao",
+          "nguHanh": "H",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Trực phù",
+          "nguHanh": "K",
+          "loai": 16,
+          "amDuong": ""
+        },
+        {
+          "name": "Lâm quan",
+          "nguHanh": "K",
+          "loai": 7,
+          "amDuong": ""
+        },
+        {
+          "name": "Địa kiếp",
+          "nguHanh": "H",
+          "loai": 11,
+          "amDuong": ""
+        },
+        {
+          "name": "Địa không",
+          "nguHanh": "H",
+          "loai": 11,
+          "amDuong": ""
+        },
+        {
+          "name": "Hữu bật",
+          "nguHanh": "O",
+          "loai": 2,
+          "amDuong": ""
+        },
+        {
+          "name": "Bát tọa",
+          "nguHanh": "T",
+          "loai": 7,
+          "amDuong": ""
+        }
+      ]
+    },
+    {
+      "branch": "Ngọ",
+      "cung": "Nô bộc",
+      "is_than": false,
+      "am_duong": 1,
+      "stars": [
+        {
+          "name": "Cự môn",
+          "nguHanh": "T",
+          "loai": 1,
+          "amDuong": -1
+        },
+        {
+          "name": "Phục binh",
+          "nguHanh": "H",
+          "loai": 13,
+          "amDuong": ""
+        },
+        {
+          "name": "Thái tuế",
+          "nguHanh": "H",
+          "loai": 15,
+          "amDuong": 0
+        },
+        {
+          "name": "Đế vượng",
+          "nguHanh": "K",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên phúc",
+          "nguHanh": "H",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên riêu",
+          "nguHanh": "T",
+          "loai": 13,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên y",
+          "nguHanh": "T",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên giải",
+          "nguHanh": "H",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên thương",
+          "nguHanh": "O",
+          "loai": 12,
+          "amDuong": ""
+        }
+      ]
+    },
+    {
+      "branch": "Mùi",
+      "cung": "Thiên di",
+      "is_than": false,
+      "am_duong": -1,
+      "stars": [
+        {
+          "name": "Thiên tướng",
+          "nguHanh": "T",
+          "loai": 1,
+          "amDuong": 1
+        },
+        {
+          "name": "Quan phù",
+          "nguHanh": "H",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiếu dương",
+          "nguHanh": "H",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên không",
+          "nguHanh": "T",
+          "loai": 11,
+          "amDuong": ""
+        },
+        {
+          "name": "Suy",
+          "nguHanh": "T",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Đà la",
+          "nguHanh": "K",
+          "loai": 11,
+          "amDuong": ""
+        },
+        {
+          "name": "Hỏa tinh",
+          "nguHanh": "H",
+          "loai": 11,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên khôi",
+          "nguHanh": "H",
+          "loai": 6,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên tài",
+          "nguHanh": "O",
+          "loai": 2,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên thọ",
+          "nguHanh": "O",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Đẩu quân",
+          "nguHanh": "H",
+          "loai": 5,
+          "amDuong": ""
+        }
+      ]
+    },
+    {
+      "branch": "Thân",
+      "cung": "Tật Ách",
+      "is_than": false,
+      "am_duong": 1,
+      "stars": [
+        {
+          "name": "Thiên đồng",
+          "nguHanh": "T",
+          "loai": 1,
+          "amDuong": 1
+        },
+        {
+          "name": "Thiên lương",
+          "nguHanh": "M",
+          "loai": 1,
+          "amDuong": -1
+        },
+        {
+          "name": "Lộc tồn",
+          "nguHanh": "O",
+          "loai": 3,
+          "amDuong": ""
+        },
+        {
+          "name": "Bác sỹ",
+          "nguHanh": "T",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Tang môn",
+          "nguHanh": "M",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Bệnh",
+          "nguHanh": "H",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Cô thần",
+          "nguHanh": "O",
+          "loai": 13,
+          "amDuong": ""
+        },
+        {
+          "name": "Phong cáo",
+          "nguHanh": "O",
+          "loai": 4,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên sứ",
+          "nguHanh": "T",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên mã",
+          "nguHanh": "H",
+          "loai": 3,
+          "amDuong": ""
+        },
+        {
+          "name": "Hóa khoa",
+          "nguHanh": "T",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Lưu hà",
+          "nguHanh": "T",
+          "loai": 12,
+          "amDuong": ""
+        }
+      ]
+    },
+    {
+      "branch": "Dậu",
+      "cung": "Tài Bạch",
+      "is_than": false,
+      "am_duong": -1,
+      "stars": [
+        {
+          "name": "Vũ khúc",
+          "nguHanh": "K",
+          "loai": 1,
+          "amDuong": -1
+        },
+        {
+          "name": "Thất sát",
+          "nguHanh": "K",
+          "loai": 1,
+          "amDuong": 1
+        },
+        {
+          "name": "Lực sĩ",
+          "nguHanh": "H",
+          "loai": 2,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiếu âm",
+          "nguHanh": "T",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Tử",
+          "nguHanh": "H",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Kình dương",
+          "nguHanh": "K",
+          "loai": 11,
+          "amDuong": ""
+        },
+        {
+          "name": "Linh tinh",
+          "nguHanh": "H",
+          "loai": 11,
+          "amDuong": ""
+        },
+        {
+          "name": "Tả phù",
+          "nguHanh": "O",
+          "loai": 2,
+          "amDuong": ""
+        },
+        {
+          "name": "Tam thai",
+          "nguHanh": "M",
+          "loai": 7,
+          "amDuong": ""
+        },
+        {
+          "name": "Hồng loan",
+          "nguHanh": "T",
+          "loai": 8,
+          "amDuong": ""
+        },
+        {
+          "name": "Phá toái",
+          "nguHanh": "H",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Hóa quyền",
+          "nguHanh": "T",
+          "loai": 4,
+          "amDuong": ""
+        }
+      ]
+    },
+    {
+      "branch": "Tuất",
+      "cung": "Tử tức",
+      "is_than": false,
+      "am_duong": 1,
+      "stars": [
+        {
+          "name": "Thái Dương",
+          "nguHanh": "H",
+          "loai": 1,
+          "amDuong": 1
+        },
+        {
+          "name": "Thanh long",
+          "nguHanh": "T",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Quan phù",
+          "nguHanh": "H",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Mộ",
+          "nguHanh": "O",
+          "loai": 2,
+          "amDuong": ""
+        },
+        {
+          "name": "Long trì",
+          "nguHanh": "T",
+          "loai": 3,
+          "amDuong": ""
+        },
+        {
+          "name": "Văn Khúc",
+          "nguHanh": "T",
+          "loai": 6,
+          "amDuong": ""
+        },
+        {
+          "name": "Địa võng",
+          "nguHanh": "O",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Hoa cái",
+          "nguHanh": "K",
+          "loai": 14,
+          "amDuong": ""
+        },
+        {
+          "name": "Hóa lộc",
+          "nguHanh": "M",
+          "loai": 3,
+          "amDuong": ""
+        }
+      ]
+    },
+    {
+      "branch": "Hợi",
+      "cung": "Phu thê",
+      "is_than": false,
+      "am_duong": -1,
+      "stars": [
+        {
+          "name": "Tiểu hao",
+          "nguHanh": "H",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Tử phù",
+          "nguHanh": "K",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Nguyệt đức",
+          "nguHanh": "H",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Tuyệt",
+          "nguHanh": "O",
+          "loai": 12,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên quý",
+          "nguHanh": "O",
+          "loai": 3,
+          "amDuong": ""
+        },
+        {
+          "name": "Thiên quan",
+          "nguHanh": "H",
+          "loai": 5,
+          "amDuong": ""
+        },
+        {
+          "name": "Văn tinh",
+          "nguHanh": "H",
+          "loai": 6,
+          "amDuong": ""
+        },
+        {
+          "name": "Kiếp sát",
+          "nguHanh": "H",
+          "loai": 11,
+          "amDuong": ""
+        }
+      ]
+    }
+  ]
+}
