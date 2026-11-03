@@ -12,7 +12,7 @@ JWT, vitest, `@anthropic-ai/sdk` + `openai` (tuỳ chọn).
 cd server
 npm install
 npm run dev          # http://127.0.0.1:8973 — tài liệu API: /docs, giao diện thử: /viewer
-npm test             # 72 test
+npm test             # 84 test
 npm run build && npm start
 ```
 
@@ -30,7 +30,8 @@ Quan trọng:
 | `DATABASE_URL` | `postgres://...` (production). `pglite://<thư mục>` hoặc để trống: Postgres nhúng cho dev (để trống = trong bộ nhớ). Bắt buộc khi `NODE_ENV=production`. |
 | `JWT_SECRET` | Khoá ký token đăng nhập. Bắt buộc khi `NODE_ENV=production`. |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Tạo/cập nhật tài khoản admin khi khởi động. |
-| `API_KEY`, `LLM_ALLOW_USERS` | Bảo vệ luận giải LLM: cần `X-API-Key`, hoặc (khi `LLM_ALLOW_USERS=1`) người dùng đã đăng nhập. |
+| `API_KEY` | Header `X-API-Key` khớp giá trị này thì dùng luận giải AI nội bộ, không tính lượt. |
+| `SEPAY_BANK`, `SEPAY_ACCOUNT_NUMBER`, `SEPAY_ACCOUNT_NAME`, `SEPAY_WEBHOOK_KEY` | Thanh toán SePay, xem mục Thanh toán. |
 | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` | Không có thì luận giải chạy offline. |
 
 Schema database tự migrate khi khởi động (`src/db/migrations.ts`). Lần đầu, kho luận giải
@@ -77,6 +78,43 @@ Sai kiểu/thiếu trường → `422 {"detail":[...]}`; ngày không tồn tạ
 Khác bản Python (có chủ đích):
 - Schema chặt hơn pydantic: số phải là số JSON (`"15"` dạng chuỗi bị từ chối), boolean phải là `true/false`.
 - Lỗi 422 có cùng khung `{"detail":[{type, loc, msg}]}` nhưng câu chữ `msg` lấy từ zod.
+
+## Thanh toán (SePay) và lượt luận giải AI
+
+Người dùng mua gói → nhận lượt; mỗi lượt mở khoá luận giải AI cho **một lá số**. Báo cáo đã mở khoá được
+lưu lại: đọc lại không tốn lượt, không gọi LLM. Nếu AI viết được ít hơn `MIN_CUNG_AI` cung qua Guardrail
+(lỗi LLM, chưa có key...) thì trả bản tổng hợp và **không trừ lượt**.
+
+Luồng thanh toán:
+1. `POST /v1/orders {plan_code}` → đơn mã `TUVIxxxxxxxx` + thông tin chuyển khoản và ảnh VietQR (`qr.sepay.vn`).
+   Tải lại trang thì dùng lại đơn đang chờ cùng gói.
+2. Khách chuyển khoản với nội dung là mã đơn. SePay gọi `POST /v1/payments/sepay/webhook`
+   (header `Authorization: Apikey <SEPAY_WEBHOOK_KEY>`).
+3. Backend tìm mã đơn trong `code`/`content`, đủ tiền thì đánh dấu đã trả và cộng lượt (cùng một transaction).
+   Mỗi giao dịch SePay (theo `id`) chỉ xử lý một lần nên SePay gửi lại không cộng trùng.
+4. Trang web hỏi `GET /v1/orders/:id` mỗi vài giây tới khi `status = paid`.
+
+Giao dịch không khớp vẫn trả `200 {"success": true}` (để SePay không gửi lại) và được lưu với `match_status`:
+`thieu_tien`, `khong_co_ma_don`, `khong_tim_thay_don`, `don_da_thanh_toan` (khách trả hai lần), `don_da_huy`, `tien_ra`.
+Admin xem ở `GET /admin/payment-transactions?can_xem=true` và xác nhận tay bằng `POST /admin/orders/:id/mark-paid`.
+Đơn quá `ORDER_EXPIRES_MIN` phút hiển thị "hết hạn" nhưng tiền về muộn vẫn được nhận.
+
+Cấu hình trên SePay: my.sepay.vn → Webhooks → Thêm webhook, URL `https://<api>/v1/payments/sepay/webhook`,
+kiểu chứng thực **API Key**, khoá = `SEPAY_WEBHOOK_KEY`. Định dạng webhook và QR lấy theo gói tích hợp chính thức
+`sepayvn/laravel-sepay` (trang docs.sepay.vn không truy cập được từ môi trường phát triển) — nên bấm
+"Gửi thử" trên SePay một lần sau khi deploy để xác nhận.
+
+| Endpoint | Nội dung |
+|---|---|
+| `GET /v1/plans` | Các gói đang bán |
+| `GET /v1/me/credits` | Lượt còn lại, các lần cộng lượt, số lá số đã mở khoá |
+| `GET/POST /v1/orders`, `GET /v1/orders/:id` | Đơn của người dùng |
+| `POST /v1/payments/sepay/webhook` | Webhook SePay |
+| `GET /admin/billing/stats` | Doanh thu, đơn, lượt đã dùng, giao dịch cần xem |
+| `GET /admin/plans`, `PUT /admin/plans/:code` | Sửa/thêm gói (chỉ áp dụng cho đơn mới) |
+| `GET /admin/orders`, `POST /admin/orders/:id/mark-paid`, `POST /admin/orders/:id/cancel` | Đơn hàng |
+| `GET /admin/payment-transactions` | Giao dịch SePay đã nhận |
+| `GET/POST /admin/users/:id/credits` | Xem / cộng lượt thủ công (ghi lý do) |
 
 ## Kiểm thử
 

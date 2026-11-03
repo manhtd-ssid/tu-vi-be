@@ -7,6 +7,7 @@
  *   auth   (routes/auth.ts)   — đăng ký, đăng nhập (JWT), thông tin tài khoản.
  *   charts (routes/charts.ts) — lá số đã lưu của người dùng.
  *   admin  (routes/admin.ts)  — thống kê, người dùng, lá số, kho luận giải, log luận giải.
+ *   billing (routes/billing.ts, routes/adminBilling.ts) — gói, đơn hàng, webhook SePay, lượt AI.
  * Tài liệu OpenAPI: GET /docs.
  * Lỗi kiểu dữ liệu → 422 {detail: [...]}; lỗi giá trị → 400 {error}; lỗi khác → {detail}.
  */
@@ -23,7 +24,10 @@ import { createDb, type Db } from "../db/index.js";
 import { InputError } from "../engine/tuviEngine.js";
 import { hashPassword } from "../lib/password.js";
 import { HttpError, ValidationError } from "./http.js";
+import { Billing } from "../billing/billing.js";
+import { adminBillingRoutes } from "./routes/adminBilling.js";
 import { adminRoutes } from "./routes/admin.js";
+import { billingRoutes } from "./routes/billing.js";
 import { authRoutes } from "./routes/auth.js";
 import { chartRoutes } from "./routes/charts.js";
 import { coreRoutes } from "./routes/core.js";
@@ -42,6 +46,7 @@ declare module "fastify" {
   interface FastifyInstance {
     svc: ChartService;
     db: Db;
+    billing: Billing;
   }
 }
 
@@ -71,6 +76,7 @@ export async function buildApp(opts: AppOptions = {}): Promise<FastifyInstance> 
   const kb = await KbStore.open(db, opts.kbSeed);
   await bootstrapAdmin(db);
   app.decorate("db", db);
+  app.decorate("billing", new Billing(db));
   app.decorate("svc", new ChartService(db, kb, opts.llm ?? ia.generateLlm, app.log));
   if (!opts.db) app.addHook("onClose", async () => db.close());
 
@@ -106,5 +112,7 @@ export async function buildApp(opts: AppOptions = {}): Promise<FastifyInstance> 
   await app.register(authRoutes);
   await app.register(chartRoutes);
   await app.register(adminRoutes);
+  await app.register(billingRoutes);
+  await app.register(adminBillingRoutes);
   return app;
 }

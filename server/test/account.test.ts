@@ -149,7 +149,9 @@ describe("admin", () => {
 it("LLM trượt Guardrail được log là bị chặn", async () => {
   const db2 = await createDb("");
   const app2 = await buildApp({ db: db2, llm: async () => "## Cung X\nBạn chắc chắn sẽ gặp hoạ [S99]" });
-  const r = (await app2.inject({ method: "POST", url: "/v1/luan-giai", payload: { ...BASE, use_llm: true } })).json();
+  process.env.API_KEY = "k";
+  const r = (await app2.inject({ method: "POST", url: "/v1/luan-giai", payload: { ...BASE, use_llm: true }, headers: { "x-api-key": "k" } })).json();
+  delete process.env.API_KEY;
   expect(r.per_cung.every((x: any) => x.mode === "offline_sau_khi_llm_truot_guardrail")).toBe(true);
   await new Promise((res) => setTimeout(res, 50));
   const [row] = await db2.query("SELECT blocked FROM luan_giai_logs");
