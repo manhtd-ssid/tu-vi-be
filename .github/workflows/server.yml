@@ -61,12 +61,19 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          # tên nhánh được chuẩn hoá (feat/x → feat-x)
+          tags: |
+            type=ref,event=branch
+            type=sha
       - uses: docker/build-push-action@v6
         with:
           context: server
           push: ${{ github.event_name == 'push' && (github.ref_name == 'master' || github.ref_name == 'dev') }}
-          tags: |
-            ghcr.io/${{ github.repository }}:${{ github.ref_name }}
-            ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
