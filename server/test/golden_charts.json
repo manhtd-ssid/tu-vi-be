@@ -1,0 +1,697 @@
+{
+  "15/8/1990-g7": {
+    "menh": 2,
+    "than": 2,
+    "palaces": {
+      "Tý": [
+        "Dưỡng",
+        "Thai phụ",
+        "Thiên cơ",
+        "Thiên hư",
+        "Thiên khốc",
+        "Tuế phá",
+        "Tướng quân",
+        "Địa giải"
+      ],
+      "Sửu": [
+        "Long đức",
+        "Phá quân",
+        "Thai",
+        "Thiên việt",
+        "Tấu thư",
+        "Tử vi",
+        "Đường phù"
+      ],
+      "Dần": [
+        "Bạch hổ",
+        "Phi liêm",
+        "Thiên hình",
+        "Thiên trù",
+        "Tràng sinh"
+      ],
+      "Mão": [
+        "Hỷ thần",
+        "Mộc dục",
+        "Phúc đức",
+        "Thiên hỷ",
+        "Thiên phủ",
+        "Thiên đức",
+        "Ân quang",
+        "Đào hoa"
+      ],
+      "Thìn": [
+        "Bệnh phù",
+        "Giải thần",
+        "Hóa kỵ",
+        "Phượng các",
+        "Quan đới",
+        "Quả tú",
+        "Quốc ấn",
+        "Thiên la",
+        "Thái âm",
+        "Văn xương",
+        "Điếu khách"
+      ],
+      "Tỵ": [
+        "Bát tọa",
+        "Hữu bật",
+        "Liêm trinh",
+        "Lâm quan",
+        "Tham lang",
+        "Trực phù",
+        "Đại hao",
+        "Địa không",
+        "Địa kiếp"
+      ],
+      "Ngọ": [
+        "Cự môn",
+        "Phục binh",
+        "Thiên giải",
+        "Thiên phúc",
+        "Thiên riêu",
+        "Thiên thương",
+        "Thiên y",
+        "Thái tuế",
+        "Đế vượng"
+      ],
+      "Mùi": [
+        "Hỏa tinh",
+        "Quan phù",
+        "Suy",
+        "Thiên khôi",
+        "Thiên không",
+        "Thiên thọ",
+        "Thiên tài",
+        "Thiên tướng",
+        "Thiếu dương",
+        "Đà la",
+        "Đẩu quân"
+      ],
+      "Thân": [
+        "Bác sỹ",
+        "Bệnh",
+        "Cô thần",
+        "Hóa khoa",
+        "Lưu hà",
+        "Lộc tồn",
+        "Phong cáo",
+        "Tang môn",
+        "Thiên lương",
+        "Thiên mã",
+        "Thiên sứ",
+        "Thiên đồng"
+      ],
+      "Dậu": [
+        "Hóa quyền",
+        "Hồng loan",
+        "Kình dương",
+        "Linh tinh",
+        "Lực sĩ",
+        "Phá toái",
+        "Tam thai",
+        "Thiếu âm",
+        "Thất sát",
+        "Tả phù",
+        "Tử",
+        "Vũ khúc"
+      ],
+      "Tuất": [
+        "Hoa cái",
+        "Hóa lộc",
+        "Long trì",
+        "Mộ",
+        "Quan phù",
+        "Thanh long",
+        "Thái Dương",
+        "Văn Khúc",
+        "Địa võng"
+      ],
+      "Hợi": [
+        "Kiếp sát",
+        "Nguyệt đức",
+        "Thiên quan",
+        "Thiên quý",
+        "Tiểu hao",
+        "Tuyệt",
+        "Tử phù",
+        "Văn tinh"
+      ]
+    }
+  },
+  "1/1/2000-g1": {
+    "menh": 1,
+    "than": 1,
+    "palaces": {
+      "Tý": [
+        "Bát tọa",
+        "Hồng loan",
+        "Hữu bật",
+        "Phi liêm",
+        "Phúc đức",
+        "Thiên cơ",
+        "Thiên khôi",
+        "Thiên đức",
+        "Đào hoa",
+        "Đế vượng"
+      ],
+      "Sửu": [
+        "Hỷ thần",
+        "Phá quân",
+        "Quả tú",
+        "Suy",
+        "Tử vi",
+        "Điếu khách"
+      ],
+      "Dần": [
+        "Bệnh",
+        "Bệnh phù",
+        "Phong cáo",
+        "Quốc ấn",
+        "Tam thai",
+        "Thiên phúc",
+        "Trực phù",
+        "Tả phù"
+      ],
+      "Mão": [
+        "Thiên khốc",
+        "Thiên phủ",
+        "Thiên thọ",
+        "Thiên tài",
+        "Thái tuế",
+        "Tử",
+        "Đại hao"
+      ],
+      "Thìn": [
+        "Hóa kỵ",
+        "Mộ",
+        "Phục binh",
+        "Thiên giải",
+        "Thiên không",
+        "Thiên la",
+        "Thiếu dương",
+        "Thái âm",
+        "Văn Khúc"
+      ],
+      "Tỵ": [
+        "Cô thần",
+        "Hóa quyền",
+        "Liêm trinh",
+        "Quan phù",
+        "Tang môn",
+        "Tham lang",
+        "Thiên mã",
+        "Thiên quý",
+        "Thiên thương",
+        "Tuyệt",
+        "Đà la",
+        "Đẩu quân",
+        "Địa giải"
+      ],
+      "Ngọ": [
+        "Bác sỹ",
+        "Cự môn",
+        "Dưỡng",
+        "Lưu hà",
+        "Lộc tồn",
+        "Thai phụ",
+        "Thiên hỷ",
+        "Thiếu âm"
+      ],
+      "Mùi": [
+        "Giải thần",
+        "Hoa cái",
+        "Kình dương",
+        "Long trì",
+        "Lực sĩ",
+        "Phượng các",
+        "Quan phù",
+        "Thai",
+        "Thiên hình",
+        "Thiên sứ",
+        "Thiên tướng"
+      ],
+      "Thân": [
+        "Hóa khoa",
+        "Kiếp sát",
+        "Nguyệt đức",
+        "Thanh long",
+        "Thiên lương",
+        "Thiên trù",
+        "Thiên việt",
+        "Thiên đồng",
+        "Tràng sinh",
+        "Tử phù"
+      ],
+      "Dậu": [
+        "Hóa lộc",
+        "Hỏa tinh",
+        "Mộc dục",
+        "Phá toái",
+        "Thiên hư",
+        "Thiên quan",
+        "Thất sát",
+        "Tiểu hao",
+        "Tuế phá",
+        "Văn tinh",
+        "Vũ khúc",
+        "Ân quang"
+      ],
+      "Tuất": [
+        "Linh tinh",
+        "Long đức",
+        "Quan đới",
+        "Thái Dương",
+        "Tướng quân",
+        "Văn xương",
+        "Địa võng"
+      ],
+      "Hợi": [
+        "Bạch hổ",
+        "Lâm quan",
+        "Thiên riêu",
+        "Thiên y",
+        "Tấu thư",
+        "Đường phù",
+        "Địa không",
+        "Địa kiếp"
+      ]
+    }
+  },
+  "29/12/1985-g12": {
+    "menh": 2,
+    "than": 12,
+    "palaces": {
+      "Tý": [
+        "Hữu bật",
+        "Quan đới",
+        "Thiên khôi",
+        "Thiên phủ",
+        "Thiên thọ",
+        "Tiểu hao",
+        "Trực phù",
+        "Vũ khúc",
+        "Địa không"
+      ],
+      "Sửu": [
+        "Hoa cái",
+        "Hóa kỵ",
+        "Mộc dục",
+        "Phong cáo",
+        "Phá toái",
+        "Thanh long",
+        "Thái Dương",
+        "Thái tuế",
+        "Thái âm"
+      ],
+      "Dần": [
+        "Cô thần",
+        "Hồng loan",
+        "Kiếp sát",
+        "Linh tinh",
+        "Lực sĩ",
+        "Tham lang",
+        "Thiên không",
+        "Thiên tài",
+        "Thiếu dương",
+        "Tràng sinh",
+        "Tả phù",
+        "Đà la",
+        "Đẩu quân"
+      ],
+      "Mão": [
+        "Bác sỹ",
+        "Cự môn",
+        "Hóa lộc",
+        "Lộc tồn",
+        "Tang môn",
+        "Thai",
+        "Thiên cơ",
+        "Văn Khúc",
+        "Ân quang"
+      ],
+      "Thìn": [
+        "Dưỡng",
+        "Hóa khoa",
+        "Kình dương",
+        "Quan phù",
+        "Thiên giải",
+        "Thiên la",
+        "Thiên quan",
+        "Thiên tướng",
+        "Thiếu âm",
+        "Tử vi"
+      ],
+      "Tỵ": [
+        "Hóa quyền",
+        "Long trì",
+        "Phục binh",
+        "Quan phù",
+        "Thai phụ",
+        "Thiên khốc",
+        "Thiên lương",
+        "Tuyệt",
+        "Địa giải"
+      ],
+      "Ngọ": [
+        "Mộ",
+        "Nguyệt đức",
+        "Thiên thương",
+        "Thiên trù",
+        "Thất sát",
+        "Tử phù",
+        "Văn tinh",
+        "Đào hoa",
+        "Đại hao"
+      ],
+      "Mùi": [
+        "Bát tọa",
+        "Bệnh phù",
+        "Tam thai",
+        "Thiên hình",
+        "Thiên hư",
+        "Tuế phá",
+        "Tử"
+      ],
+      "Thân": [
+        "Bệnh",
+        "Hỷ thần",
+        "Liêm trinh",
+        "Long đức",
+        "Thiên hỷ",
+        "Thiên phúc",
+        "Thiên sứ",
+        "Thiên việt",
+        "Đường phù"
+      ],
+      "Dậu": [
+        "Bạch hổ",
+        "Giải thần",
+        "Phi liêm",
+        "Phượng các",
+        "Suy"
+      ],
+      "Tuất": [
+        "Lưu hà",
+        "Phá quân",
+        "Phúc đức",
+        "Quả tú",
+        "Thiên đức",
+        "Tấu thư",
+        "Đế vượng",
+        "Địa kiếp",
+        "Địa võng"
+      ],
+      "Hợi": [
+        "Hỏa tinh",
+        "Lâm quan",
+        "Quốc ấn",
+        "Thiên mã",
+        "Thiên quý",
+        "Thiên riêu",
+        "Thiên y",
+        "Thiên đồng",
+        "Tướng quân",
+        "Văn xương",
+        "Điếu khách"
+      ]
+    }
+  },
+  "10/6/1975-g5": {
+    "menh": 3,
+    "than": 11,
+    "palaces": {
+      "Tý": [
+        "Hồng loan",
+        "Phúc đức",
+        "Tham lang",
+        "Thiên khôi",
+        "Thiên đức",
+        "Đào hoa",
+        "Đại hao",
+        "Đế vượng"
+      ],
+      "Sửu": [
+        "Cự môn",
+        "Hỏa tinh",
+        "Phục binh",
+        "Quả tú",
+        "Suy",
+        "Thiên hình",
+        "Thiên thọ",
+        "Thiên đồng",
+        "Điếu khách"
+      ],
+      "Dần": [
+        "Bệnh",
+        "Quan phù",
+        "Thiên tướng",
+        "Trực phù",
+        "Vũ khúc",
+        "Đà la"
+      ],
+      "Mão": [
+        "Bác sỹ",
+        "Hóa quyền",
+        "Lộc tồn",
+        "Thiên khốc",
+        "Thiên lương",
+        "Thái Dương",
+        "Thái tuế",
+        "Tử",
+        "Đẩu quân",
+        "Địa kiếp"
+      ],
+      "Thìn": [
+        "Kình dương",
+        "Lực sĩ",
+        "Mộ",
+        "Thiên giải",
+        "Thiên không",
+        "Thiên la",
+        "Thiên quan",
+        "Thiếu dương",
+        "Thất sát"
+      ],
+      "Tỵ": [
+        "Cô thần",
+        "Hóa lộc",
+        "Tang môn",
+        "Thanh long",
+        "Thiên cơ",
+        "Thiên mã",
+        "Thiên riêu",
+        "Thiên tài",
+        "Thiên y",
+        "Tuyệt",
+        "Ân quang"
+      ],
+      "Ngọ": [
+        "Bát tọa",
+        "Dưỡng",
+        "Hóa khoa",
+        "Hữu bật",
+        "Linh tinh",
+        "Phong cáo",
+        "Thiên hỷ",
+        "Thiên trù",
+        "Thiếu âm",
+        "Tiểu hao",
+        "Tử vi",
+        "Văn tinh",
+        "Văn xương"
+      ],
+      "Mùi": [
+        "Giải thần",
+        "Hoa cái",
+        "Long trì",
+        "Phượng các",
+        "Quan phù",
+        "Thai",
+        "Thiên thương",
+        "Tướng quân",
+        "Địa không"
+      ],
+      "Thân": [
+        "Kiếp sát",
+        "Nguyệt đức",
+        "Phá quân",
+        "Tam thai",
+        "Thiên phúc",
+        "Thiên việt",
+        "Tràng sinh",
+        "Tả phù",
+        "Tấu thư",
+        "Tử phù",
+        "Văn Khúc",
+        "Đường phù"
+      ],
+      "Dậu": [
+        "Mộc dục",
+        "Phi liêm",
+        "Phá toái",
+        "Thiên hư",
+        "Thiên quý",
+        "Thiên sứ",
+        "Tuế phá"
+      ],
+      "Tuất": [
+        "Hỷ thần",
+        "Liêm trinh",
+        "Long đức",
+        "Lưu hà",
+        "Quan đới",
+        "Thai phụ",
+        "Thiên phủ",
+        "Địa võng"
+      ],
+      "Hợi": [
+        "Bạch hổ",
+        "Bệnh phù",
+        "Hóa kỵ",
+        "Lâm quan",
+        "Quốc ấn",
+        "Thái âm",
+        "Địa giải"
+      ]
+    }
+  },
+  "20/3/2010-g9": {
+    "menh": 8,
+    "than": 12,
+    "palaces": {
+      "Tý": [
+        "Mộc dục",
+        "Phá quân",
+        "Thiên thương",
+        "Tướng quân",
+        "Văn Khúc",
+        "Điếu khách"
+      ],
+      "Sửu": [
+        "Hồng loan",
+        "Quan đới",
+        "Quả tú",
+        "Thiên cơ",
+        "Thiên thọ",
+        "Thiên việt",
+        "Trực phù",
+        "Tấu thư",
+        "Đường phù"
+      ],
+      "Dần": [
+        "Lâm quan",
+        "Phi liêm",
+        "Thai phụ",
+        "Thiên phủ",
+        "Thiên riêu",
+        "Thiên sứ",
+        "Thiên trù",
+        "Thiên y",
+        "Thái tuế",
+        "Tử vi",
+        "Văn xương"
+      ],
+      "Mão": [
+        "Hóa kỵ",
+        "Hỷ thần",
+        "Thiên không",
+        "Thiếu dương",
+        "Thái âm",
+        "Đào hoa",
+        "Đế vượng",
+        "Địa không"
+      ],
+      "Thìn": [
+        "Bệnh phù",
+        "Quốc ấn",
+        "Suy",
+        "Tang môn",
+        "Tham lang",
+        "Thiên khốc",
+        "Thiên la"
+      ],
+      "Tỵ": [
+        "Bát tọa",
+        "Bệnh",
+        "Cô thần",
+        "Cự môn",
+        "Phá toái",
+        "Thiếu âm",
+        "Tả phù",
+        "Ân quang",
+        "Đại hao"
+      ],
+      "Ngọ": [
+        "Liêm trinh",
+        "Long trì",
+        "Phục binh",
+        "Quan phù",
+        "Thiên phúc",
+        "Thiên tướng",
+        "Tử"
+      ],
+      "Mùi": [
+        "Linh tinh",
+        "Mộ",
+        "Nguyệt đức",
+        "Quan phù",
+        "Thiên hỷ",
+        "Thiên khôi",
+        "Thiên lương",
+        "Tử phù",
+        "Đà la",
+        "Địa kiếp"
+      ],
+      "Thân": [
+        "Bác sỹ",
+        "Giải thần",
+        "Lưu hà",
+        "Lộc tồn",
+        "Phượng các",
+        "Thiên hư",
+        "Thiên mã",
+        "Thất sát",
+        "Tuyệt",
+        "Tuế phá",
+        "Địa giải"
+      ],
+      "Dậu": [
+        "Dưỡng",
+        "Hóa khoa",
+        "Hỏa tinh",
+        "Hữu bật",
+        "Kình dương",
+        "Long đức",
+        "Lực sĩ",
+        "Tam thai",
+        "Thiên quý",
+        "Thiên tài",
+        "Thiên đồng",
+        "Đẩu quân"
+      ],
+      "Tuất": [
+        "Bạch hổ",
+        "Hoa cái",
+        "Hóa quyền",
+        "Phong cáo",
+        "Thai",
+        "Thanh long",
+        "Thiên giải",
+        "Thiên hình",
+        "Vũ khúc",
+        "Địa võng"
+      ],
+      "Hợi": [
+        "Hóa lộc",
+        "Kiếp sát",
+        "Phúc đức",
+        "Thiên quan",
+        "Thiên đức",
+        "Thái Dương",
+        "Tiểu hao",
+        "Tràng sinh",
+        "Văn tinh"
+      ]
+    }
+  }
+}

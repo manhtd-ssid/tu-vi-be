@@ -1,6 +1,10 @@
-# tu-vi-be — Backend Tử Vi (Python)
+# tu-vi-be — Backend Tử Vi
 
-Phần tử vi (Tử Vi Đẩu Số) tách từ dự án Horoscope Agents. Giữ nguyên Python.
+Phần tử vi (Tử Vi Đẩu Số) tách từ dự án Horoscope Agents.
+
+> **Server chính là bản Node.js/TypeScript trong [`server/`](server/README.md).** Bản Python
+> bên dưới (`src/`, `agents/`) giữ lại làm engine đối chiếu (`npm run crossval`) trong giai
+> đoạn chuyển đổi; khi đã chốt bản Node thì có thể xoá.
 
 ## Thành phần
 

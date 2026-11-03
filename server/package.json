@@ -1,0 +1,29 @@
+{
+  "name": "tu-vi-be-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend Tử Vi (Node/TypeScript) — port từ engine Python lasotuvi",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "crossval": "tsx scripts/crossval.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.4.0",
+    "@fastify/cors": "^11.4.0",
+    "fastify": "^5.6.0",
+    "openai": "^7.0.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vitest": "^5.1.0"
+  }
+}
