@@ -30,23 +30,57 @@ export function jsonSchema(schema: z.ZodType): Record<string, unknown> {
   return rest;
 }
 
-export interface AuthUser { id: number; role: "user" | "admin"; email: string }
+export interface AuthUser { id: number; role: "user" | "admin"; email: string; email_verified: boolean }
 
-/** Đọc user từ header Authorization: Bearer <jwt>. required=false thì trả null khi không có token. */
+export const SESSION_COOKIE = "tuvi_session";
+
+/** Lấy JWT: ưu tiên header Bearer (client API), sau đó cookie phiên (trình duyệt). */
+function layToken(req: FastifyRequest): { token: string; quaCookie: boolean } | null {
+  const h = req.headers.authorization;
+  if (h?.startsWith("Bearer ")) return { token: h.slice(7), quaCookie: false };
+  const c = req.cookies?.[SESSION_COOKIE];
+  return c ? { token: c, quaCookie: true } : null;
+}
+
+const CACHE = Symbol("authUser");
+
+/**
+ * Người dùng hiện tại. Quyền (role) và trạng thái phiên lấy từ database ở mỗi request:
+ * đổi mật khẩu / đăng xuất mọi nơi (token_version tăng) hay bị thu hồi quyền admin có hiệu lực ngay.
+ * required=false thì trả null khi không có token.
+ */
 export async function currentUser(req: FastifyRequest, required: true): Promise<AuthUser>;
 export async function currentUser(req: FastifyRequest, required?: false): Promise<AuthUser | null>;
 export async function currentUser(req: FastifyRequest, required = false): Promise<AuthUser | null> {
-  const h = req.headers.authorization;
-  if (!h || !h.startsWith("Bearer ")) {
+  const r = req as FastifyRequest & { [CACHE]?: AuthUser | null };
+  if (r[CACHE] !== undefined) {
+    if (!r[CACHE] && required) throw new HttpError(401, "Cần đăng nhập");
+    return r[CACHE];
+  }
+  const t = layToken(req);
+  if (!t) {
     if (required) throw new HttpError(401, "Cần đăng nhập");
     return null;
   }
+  let p: { sub: string; tv?: number };
   try {
-    const p = await req.jwtVerify<{ sub: string; role: AuthUser["role"]; email: string }>();
-    return { id: Number(p.sub), role: p.role, email: p.email };
+    p = req.server.jwt.verify<{ sub: string; tv?: number }>(t.token);
   } catch {
     throw new HttpError(401, "Phiên đăng nhập không hợp lệ hoặc đã hết hạn");
   }
+  const [u] = await req.server.db.query<{ id: number; role: AuthUser["role"]; email: string; email_verified_at: string | null; token_version: number }>(
+    "SELECT id, role, email, email_verified_at, token_version FROM users WHERE id = $1", [Number(p.sub)]);
+  if (!u || (p.tv ?? 0) !== u.token_version) throw new HttpError(401, "Phiên đăng nhập đã hết hiệu lực, bạn đăng nhập lại nhé");
+  const user: AuthUser = { id: u.id, role: u.role, email: u.email, email_verified: Boolean(u.email_verified_at) };
+  r[CACHE] = user;
+  return user;
+}
+
+/** Request ghi dữ liệu xác thực bằng cookie phải có header chống CSRF (trang lạ không gửi được qua CORS). */
+export function canCsrfHeader(req: FastifyRequest): boolean {
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return false;
+  const t = layToken(req);
+  return Boolean(t?.quaCookie) && req.headers["x-tuvi-csrf"] !== "1";
 }
 
 export async function requireAdmin(req: FastifyRequest): Promise<AuthUser> {

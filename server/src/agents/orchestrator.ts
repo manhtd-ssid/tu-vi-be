@@ -124,13 +124,14 @@ export interface LuanCung {
 /** Luận một cung. Bản LLM không qua Guardrail thì rơi về bản ghép offline. */
 export async function luanCung(
   palace: Palace, kb: KB, cachCuc: CachCuc[] | null = null, useLlm = false, llm: ia.LlmFn = ia.generateLlm,
+  usage?: ia.LlmUsage,
 ): Promise<LuanCung> {
   const r = retrievePalace(palace, kb, cachCuc);
   let section = composeSection(r);
   let g = guardrailSection(section, r.chunks);
   let mode: LuanCung["mode"] = "offline";
   if (useLlm) {
-    const text = await llm(promptSection(r));
+    const text = ia.layText(await llm(promptSection(r)), usage);
     if (text) {
       const gLlm = guardrailSection(text, r.chunks);
       if (gLlm.passed === gLlm.total) [section, g, mode] = [text, gLlm, "llm"];
@@ -177,12 +178,14 @@ export async function buildReport(
   chart: Chart, kb: KB | null = null, useLlm = false, llm: ia.LlmFn = ia.generateLlm,
   /** Gọi ngay khi từng cung luận xong (đã qua Guardrail) — dùng cho API streaming. */
   onCung?: (k: LuanCung) => void,
+  /** Cộng dồn số lần gọi / token LLM (để tính chi phí). */
+  usage?: ia.LlmUsage,
 ): Promise<Report> {
   const k = kb ?? loadKb();
   const cachCuc = "cuc" in chart ? nhanDienCachCuc(chart) : [];
   const cacCung = CANON.map((c) => timCung(chart, c)).filter((p): p is Palace => p !== undefined);
   const ketQua = await mapLimit(cacCung, useLlm ? 6 : 1, async (p) => {
-    const x = await luanCung(p, k, cachCuc, useLlm, llm);
+    const x = await luanCung(p, k, cachCuc, useLlm, llm, usage);
     onCung?.(x);
     return x;
   });

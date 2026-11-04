@@ -3,7 +3,20 @@ import type { FastifyInstance } from "fastify";
 import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { billingConfigured, findOrderCode, paymentInfo, type Order } from "../../billing/billing.js";
+import { receipt } from "../../email/templates.js";
 import { HttpError, currentUser, jsonSchema, parse } from "../http.js";
+
+/** Gửi email biên nhận cho đơn vừa thanh toán (lỗi gửi không ảnh hưởng đơn). */
+export async function guiBienNhan(app: FastifyInstance, orderId: number): Promise<void> {
+  try {
+    const [o] = await app.db.query<{ code: string; amount: number; credits: number; valid_days: number; paid_at: string; email: string; plan_name: string }>(
+      `SELECT o.code, o.amount, o.credits, o.valid_days, o.paid_at, u.email, p.name AS plan_name
+       FROM orders o JOIN users u ON u.id = o.user_id JOIN plans p ON p.code = o.plan_code WHERE o.id = $1 AND o.status = 'paid'`, [orderId]);
+    if (o) await app.mailer.send(receipt(o.email, o));
+  } catch (e) {
+    app.log.error({ err: e, orderId }, "gửi biên nhận lỗi");
+  }
+}
 
 const CreateOrder = z.object({ plan_code: z.string().min(1).max(50) });
 const IdParam = z.object({ id: z.coerce.number().int().positive() });
@@ -59,9 +72,13 @@ export async function billingRoutes(app: FastifyInstance) {
     return { items: (await billing.ordersOf(me.id)).map(view) };
   });
 
-  app.post("/v1/orders", { schema: { ...sec, body: jsonSchema(CreateOrder), summary: "Tạo đơn, trả thông tin chuyển khoản + VietQR" } }, async (req, reply) => {
+  app.post("/v1/orders", { ...app.limit(20, "1 hour", true), schema: { ...sec, body: jsonSchema(CreateOrder), summary: "Tạo đơn, trả thông tin chuyển khoản + VietQR" } }, async (req, reply) => {
     const me = await currentUser(req, true);
     if (!billingConfigured()) throw new HttpError(503, "Thanh toán chưa được cấu hình (thiếu SEPAY_BANK / SEPAY_ACCOUNT_NUMBER)");
+    // Cần email đã xác thực để gửi biên nhận và liên hệ khi phải hoàn tiền.
+    if (process.env.REQUIRE_EMAIL_VERIFIED !== "0" && !me.email_verified) {
+      throw new HttpError(403, "Bạn cần xác nhận email trước khi mua gói. Kiểm tra hộp thư hoặc gửi lại email xác nhận.");
+    }
     const { plan_code } = parse(CreateOrder, req.body);
     const o = await billing.createOrder(me.id, plan_code);
     if (!o) throw new HttpError(404, "Gói không tồn tại hoặc đã ngừng bán");
@@ -82,7 +99,7 @@ export async function billingRoutes(app: FastifyInstance) {
    * Giao dịch không khớp đơn (thiếu tiền, sai nội dung, đơn đã trả) vẫn trả 200 để SePay không gửi lại,
    * và được lưu với match_status để admin xử lý tay.
    */
-  app.post("/v1/payments/sepay/webhook", { schema: { tags: ["thanh toán"], summary: "Webhook SePay" } }, async (req, reply) => {
+  app.post("/v1/payments/sepay/webhook", { schema: { tags: ["thanh toán"], summary: "Webhook SePay" }, ...app.limit(300, "1 minute") }, async (req, reply) => {
     if (!process.env.SEPAY_WEBHOOK_KEY) return reply.status(503).send({ success: false, message: "Webhook chưa được cấu hình" });
     if (!sepayKeyHopLe(req.headers.authorization)) return reply.status(401).send({ success: false, message: "Invalid Token" });
     const t = parse(SePayWebhook, req.body);
@@ -93,7 +110,7 @@ export async function billingRoutes(app: FastifyInstance) {
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'dang_xu_ly', $10) ON CONFLICT (id) DO NOTHING RETURNING id`,
         [t.id, t.gateway ?? "", t.transactionDate ?? "", t.accountNumber ?? "", t.code ?? null, t.content ?? "",
           t.transferType, Math.round(t.transferAmount), t.referenceCode ?? null, JSON.stringify(req.body)]);
-      if (!ins.length) return "trung_lap";
+      if (!ins.length) return { status: "trung_lap", orderId: null };
 
       let status: string;
       let orderId: number | null = null;
@@ -112,9 +129,10 @@ export async function billingRoutes(app: FastifyInstance) {
         }
       }
       await q("UPDATE payment_transactions SET match_status = $2, order_id = $3 WHERE id = $1", [t.id, status, orderId]);
-      return status;
+      return { status, orderId };
     });
-    req.log.info({ sepay_id: t.id, ket_qua: ketQua }, "sepay webhook");
+    req.log.info({ sepay_id: t.id, ket_qua: ketQua.status }, "sepay webhook");
+    if (ketQua.status === "khop" && ketQua.orderId) await guiBienNhan(app, ketQua.orderId);
     return { success: true };
   });
 }

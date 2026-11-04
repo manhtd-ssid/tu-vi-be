@@ -21,7 +21,7 @@ beforeAll(async () => {
     await c.end();
   }
   db = await createDb(url);
-  app = await buildApp({ db, llm: async () => null });
+  app = await buildApp({ db, llm: async () => null, rateLimit: false });
 });
 afterAll(async () => {
   delete process.env.ADMIN_EMAIL;
@@ -148,7 +148,7 @@ describe("admin", () => {
 
 it("LLM trượt Guardrail được log là bị chặn", async () => {
   const db2 = await createDb("");
-  const app2 = await buildApp({ db: db2, llm: async () => "## Cung X\nBạn chắc chắn sẽ gặp hoạ [S99]" });
+  const app2 = await buildApp({ db: db2, rateLimit: false, llm: async () => "## Cung X\nBạn chắc chắn sẽ gặp hoạ [S99]" });
   process.env.API_KEY = "k";
   const r = (await app2.inject({ method: "POST", url: "/v1/luan-giai", payload: { ...BASE, use_llm: true }, headers: { "x-api-key": "k" } })).json();
   delete process.env.API_KEY;

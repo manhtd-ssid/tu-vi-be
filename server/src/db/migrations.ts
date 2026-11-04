@@ -122,4 +122,38 @@ CREATE TABLE unlocked_reports (
   UNIQUE (user_id, chart_key)
 );
 `,
+  `
+ALTER TABLE users ADD COLUMN email_verified_at TIMESTAMPTZ;
+ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0;
+
+CREATE TABLE email_tokens (
+  id          SERIAL PRIMARY KEY,
+  user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  purpose     TEXT NOT NULL CHECK (purpose IN ('verify', 'reset')),
+  token_hash  TEXT NOT NULL UNIQUE,
+  expires_at  TIMESTAMPTZ NOT NULL,
+  used_at     TIMESTAMPTZ,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX email_tokens_user ON email_tokens (user_id, purpose, created_at DESC);
+
+CREATE TABLE email_outbox (
+  id          SERIAL PRIMARY KEY,
+  to_email    TEXT NOT NULL,
+  kind        TEXT NOT NULL,
+  subject     TEXT NOT NULL,
+  status      TEXT NOT NULL CHECK (status IN ('sent', 'failed', 'logged')),
+  error       TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX email_outbox_created ON email_outbox (created_at DESC);
+
+ALTER TABLE luan_giai_logs ADD COLUMN loai TEXT NOT NULL DEFAULT 'la_so';
+ALTER TABLE luan_giai_logs ADD COLUMN llm_model TEXT;
+ALTER TABLE luan_giai_logs ADD COLUMN llm_calls INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE luan_giai_logs ADD COLUMN input_tokens INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE luan_giai_logs ADD COLUMN output_tokens INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE luan_giai_logs ADD COLUMN cost_usd NUMERIC(12, 6) NOT NULL DEFAULT 0;
+CREATE INDEX luan_giai_logs_cost ON luan_giai_logs (created_at) WHERE cost_usd > 0;
+`,
 ];

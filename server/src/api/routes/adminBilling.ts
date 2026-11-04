@@ -2,6 +2,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { HttpError, Paging, parse, requireAdmin } from "../http.js";
+import { guiBienNhan } from "./billing.js";
 
 const sec = { tags: ["admin"], security: [{ bearer: [] }] };
 const IdParam = z.object({ id: z.coerce.number().int().positive() });
@@ -29,8 +30,18 @@ export async function adminBillingRoutes(app: FastifyInstance) {
       (SELECT count(*)::int FROM orders WHERE status = 'paid') AS don_da_tra,
       (SELECT count(*)::int FROM orders WHERE status = 'pending' AND expires_at > now()) AS don_dang_cho,
       (SELECT coalesce(sum(credits_total - credits_left), 0)::int FROM credit_grants) AS luot_da_dung,
-      (SELECT count(*)::int FROM payment_transactions WHERE match_status NOT IN ('khop', 'tien_ra')) AS giao_dich_can_xem`);
-    return { ...r, doanh_thu: Number(r.doanh_thu), doanh_thu_30d: Number(r.doanh_thu_30d) };
+      (SELECT count(*)::int FROM payment_transactions WHERE match_status NOT IN ('khop', 'tien_ra')) AS giao_dich_can_xem,
+      (SELECT coalesce(sum(cost_usd), 0) FROM luan_giai_logs
+         WHERE created_at >= date_trunc('day', now() AT TIME ZONE 'Asia/Ho_Chi_Minh') AT TIME ZONE 'Asia/Ho_Chi_Minh') AS chi_phi_llm_hom_nay,
+      (SELECT coalesce(sum(cost_usd), 0) FROM luan_giai_logs WHERE created_at > now() - interval '30 days') AS chi_phi_llm_30d,
+      (SELECT count(*)::int FROM unlocked_reports WHERE created_at > now() - interval '30 days') AS mo_khoa_30d`);
+    const chi30 = Number(r.chi_phi_llm_30d);
+    return {
+      ...r, doanh_thu: Number(r.doanh_thu), doanh_thu_30d: Number(r.doanh_thu_30d),
+      chi_phi_llm_hom_nay: Number(r.chi_phi_llm_hom_nay), chi_phi_llm_30d: chi30,
+      chi_phi_moi_lan_mo_khoa_30d: r.mo_khoa_30d ? chi30 / r.mo_khoa_30d : null,
+      ngan_sach_llm_ngay: Number(process.env.LLM_DAILY_BUDGET_USD || 0) || null,
+    };
   });
 
   // ---- Gói ----
@@ -79,6 +90,7 @@ export async function adminBillingRoutes(app: FastifyInstance) {
       return done;
     });
     if (!ok) throw new HttpError(409, "Đơn không ở trạng thái chờ thanh toán");
+    await guiBienNhan(app, id);
     return billing.order(id);
   });
 

@@ -1,6 +1,7 @@
 /** Nghiệp vụ dùng chung giữa các route: lập lá số (có cache), luận giải (có cache), ghi log. */
 import type { FastifyBaseLogger } from "fastify";
-import type { LlmFn } from "../agents/interpretation.js";
+import { chiPhiUsd, newUsage, type LlmFn, type LlmUsage } from "../agents/interpretation.js";
+import { HttpError } from "./http.js";
 import type { KbStore } from "../agents/kbStore.js";
 import { buildReport, type LuanCung, type Report } from "../agents/orchestrator.js";
 import type { Db } from "../db/index.js";
@@ -71,31 +72,51 @@ export class ChartService {
     return JSON.parse(s);
   }
 
-  /** Báo cáo 12 cung. Có cache theo (lá số, use_llm, phiên bản kho luận giải). */
-  baoCao(body: BirthInput, useLlm: boolean): Promise<Report> {
+  /**
+   * Báo cáo 12 cung. Có cache theo (lá số, use_llm, phiên bản kho luận giải).
+   * `usage` chỉ có ở lần tính thật (lần trúng cache không tốn token nên không tính chi phí).
+   */
+  async baoCao(body: BirthInput, useLlm: boolean): Promise<{ report: Report; usage: LlmUsage | null }> {
     const key = `${chartKey(body)}|${useLlm}|kb${this.kb.version}`;
-    let p = this.reportCache.get(key);
-    if (!p) {
-      p = buildReport(this.tinhLaSo(body), this.kb.get(), useLlm, this.llm);
-      p.catch(() => this.reportCache.delete(key)); // không giữ kết quả lỗi
-      this.reportCache.set(key, p);
-    }
-    return p;
+    const hit = this.reportCache.get(key);
+    if (hit) return { report: await hit, usage: null };
+    const usage = newUsage();
+    const p = buildReport(this.tinhLaSo(body), this.kb.get(), useLlm, this.llm, undefined, usage);
+    p.catch(() => this.reportCache.delete(key)); // không giữ kết quả lỗi
+    this.reportCache.set(key, p);
+    return { report: await p, usage };
   }
 
   /** Báo cáo dạng streaming: gọi onCung khi từng cung xong. Không dùng cache. */
-  baoCaoStream(body: BirthInput, useLlm: boolean, onCung: (k: LuanCung) => void): Promise<Report> {
-    return buildReport(this.tinhLaSo(body), this.kb.get(), useLlm, this.llm, onCung);
+  baoCaoStream(body: BirthInput, useLlm: boolean, onCung: (k: LuanCung) => void, usage?: LlmUsage): Promise<Report> {
+    return buildReport(this.tinhLaSo(body), this.kb.get(), useLlm, this.llm, onCung, usage);
   }
 
-  /** Ghi log luận giải để admin theo dõi bản bị Guardrail chặn. Lỗi ghi log không làm hỏng request. */
-  ghiLog(body: BirthInput, useLlm: boolean, r: Report, userId: number | null): void {
+  /** Dừng AI khi chi phí LLM trong ngày (giờ Việt Nam) đã chạm LLM_DAILY_BUDGET_USD. */
+  async kiemTraNganSach(): Promise<void> {
+    const budget = Number(process.env.LLM_DAILY_BUDGET_USD || 0);
+    if (!budget) return;
+    const [{ chi }] = await this.db.query<{ chi: string }>(
+      `SELECT coalesce(sum(cost_usd), 0) AS chi FROM luan_giai_logs
+       WHERE created_at >= date_trunc('day', now() AT TIME ZONE 'Asia/Ho_Chi_Minh') AT TIME ZONE 'Asia/Ho_Chi_Minh'`);
+    if (Number(chi) >= budget) {
+      this.log.warn({ chi, budget }, "đã chạm ngân sách LLM trong ngày");
+      throw new HttpError(503, "Luận giải bằng AI đang tạm dừng vì quá tải, bạn thử lại vào ngày mai. Lượt của bạn không bị trừ.");
+    }
+  }
+
+  /** Ghi log luận giải (bản bị Guardrail chặn, chi phí LLM). Lỗi ghi log không làm hỏng request. */
+  ghiLog(body: BirthInput, useLlm: boolean, r: Pick<Report, "verdict" | "guardrail_tong" | "per_cung">, userId: number | null,
+    usage: LlmUsage | null = null, loai: "la_so" | "nam" = "la_so"): void {
     const blocked = r.verdict !== "ĐẠT" || r.per_cung.some((x) => x.mode === "offline_sau_khi_llm_truot_guardrail");
     const perCung = r.per_cung.map((x) => ({ cung: x.cung, branch: x.branch, mode: x.mode, guardrail: x.guardrail }));
+    const u = usage ?? newUsage();
     this.db.query(
-      `INSERT INTO luan_giai_logs (user_id, input, use_llm, verdict, guardrail_tong, blocked, per_cung)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [userId, JSON.stringify(birthOnly(body)), useLlm, r.verdict, r.guardrail_tong, blocked, JSON.stringify(perCung)],
+      `INSERT INTO luan_giai_logs (user_id, input, use_llm, verdict, guardrail_tong, blocked, per_cung, loai,
+         llm_model, llm_calls, input_tokens, output_tokens, cost_usd)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+      [userId, JSON.stringify(birthOnly(body)), useLlm, r.verdict, r.guardrail_tong, blocked, JSON.stringify(perCung), loai,
+        u.model, useLlm ? u.calls : 0, u.input_tokens, u.output_tokens, chiPhiUsd(u).toFixed(6)],
     ).catch((e) => this.log.error({ err: e }, "ghi luan_giai_logs lỗi"));
   }
 }

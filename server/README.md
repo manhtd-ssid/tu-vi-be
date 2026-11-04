@@ -12,7 +12,7 @@ JWT, vitest, `@anthropic-ai/sdk` + `openai` (tuỳ chọn).
 cd server
 npm install
 npm run dev          # http://127.0.0.1:8973 — tài liệu API: /docs, giao diện thử: /viewer
-npm test             # 84 test
+npm test             # 93 test
 npm run build && npm start
 ```
 
@@ -62,7 +62,10 @@ Schema database tự migrate khi khởi động (`src/db/migrations.ts`). Lần 
 | `GET /v1/meta` | Danh sách giờ, tỉnh |
 | `POST /v1/luan-giai/stream` | Như trên nhưng dạng Server-Sent Events: `cach_cuc` → 12 × `cung` (mỗi cung đã qua Guardrail) → `done` |
 | `GET /health` | `{"status":"ok"}` |
-| `POST /v1/auth/register`, `POST /v1/auth/login`, `GET /v1/auth/me` | Tài khoản email + mật khẩu, trả JWT (`Authorization: Bearer ...`) |
+| `POST /v1/auth/register`, `POST /v1/auth/login`, `POST /v1/auth/logout`, `POST /v1/auth/logout-all` | Tài khoản email + mật khẩu. Phiên: cookie httpOnly `tuvi_session` (trình duyệt) hoặc header `Authorization: Bearer <token>` |
+| `GET/PATCH /v1/auth/me`, `POST /v1/auth/change-password` | Thông tin tài khoản, đổi tên, đổi mật khẩu (các phiên khác bị đăng xuất) |
+| `POST /v1/auth/verify-email`, `POST /v1/auth/resend-verification` | Xác thực email (link 24 giờ) |
+| `POST /v1/auth/forgot`, `POST /v1/auth/reset` | Quên / đặt lại mật khẩu (link dùng một lần, 30 phút) |
 | `GET/POST /v1/la-so-da-luu`, `GET/DELETE /v1/la-so-da-luu/:id` | Lá số đã lưu của người dùng |
 | `GET /admin/stats` | Thống kê (cần role admin) |
 | `GET /admin/users`, `PATCH /admin/users/:id` | Tìm người dùng, đổi quyền |
@@ -78,6 +81,26 @@ Sai kiểu/thiếu trường → `422 {"detail":[...]}`; ngày không tồn tạ
 Khác bản Python (có chủ đích):
 - Schema chặt hơn pydantic: số phải là số JSON (`"15"` dạng chuỗi bị từ chối), boolean phải là `true/false`.
 - Lỗi 422 có cùng khung `{"detail":[{type, loc, msg}]}` nhưng câu chữ `msg` lấy từ zod.
+
+## Tài khoản, phiên đăng nhập, email
+
+- **Phiên**: JWT trong cookie httpOnly `tuvi_session` (SameSite=Lax, Secure khi production) và cũng trả trong body
+  cho client dùng Bearer. JWT mang `token_version`; đổi/đặt lại mật khẩu hoặc "đăng xuất mọi nơi" làm mọi phiên cũ
+  hết hiệu lực. Quyền admin đọc từ database ở mỗi request nên thu hồi có hiệu lực ngay.
+- **CSRF**: request ghi dữ liệu xác thực bằng cookie phải có header `X-Tuvi-Csrf: 1` (trang lạ không gửi được header
+  này qua CORS). Frontend phải gọi API với `credentials: "include"`.
+- **Email** qua SMTP (`SMTP_URL`), chưa cấu hình thì in ra log. Gửi: xác nhận email khi đăng ký, đặt lại mật khẩu,
+  biên nhận khi đơn được thanh toán. Mỗi email ghi vào bảng `email_outbox` (không lưu nội dung). Token trong link
+  chỉ lưu bản băm SHA-256. Phải xác thực email mới mua được gói (`REQUIRE_EMAIL_VERIFIED`).
+- **Giới hạn request** (`@fastify/rate-limit`, lưu trong bộ nhớ — chạy nhiều instance thì cần Redis): đăng nhập 20/10 phút/IP,
+  đăng ký 10/giờ/IP, quên mật khẩu 5/15 phút/IP, luận giải 60/giờ/người, tạo đơn 20/giờ/người.
+
+## Chi phí LLM
+
+Mỗi lần luận giải ghi số lần gọi, token vào/ra, model và chi phí ước tính (USD) vào `luan_giai_logs`
+(giá có sẵn cho claude-sonnet-5-5, claude-opus-5-5, claude-haiku-5-5, gpt-4o-mini; ghi đè bằng `LLM_PRICE_*`).
+`LLM_DAILY_BUDGET_USD`: chạm ngưỡng trong ngày (giờ VN) thì luận giải AI trả 503, không trừ lượt; đọc lại lá số đã
+mở khoá vẫn được. Admin xem chi phí hôm nay, 30 ngày và chi phí trung bình mỗi lần mở khoá ở `GET /admin/billing/stats`.
 
 ## Thanh toán (SePay) và lượt luận giải AI
 

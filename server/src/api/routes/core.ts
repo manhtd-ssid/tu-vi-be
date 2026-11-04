@@ -6,6 +6,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as ia from "../../agents/interpretation.js";
+import { newUsage } from "../../agents/interpretation.js";
 import { luanCung, type LuanCung, type Report } from "../../agents/orchestrator.js";
 import { nhanDienCachCuc } from "../../engine/cachCuc.js";
 import { CHI, KINH_DO_TINH } from "../../engine/thoiGian.js";
@@ -71,15 +72,23 @@ export async function coreRoutes(app: FastifyInstance) {
   async function luanGiai(req: Parameters<typeof currentUser>[0], body: z.infer<typeof ReportInput>,
     onCung?: (k: LuanCung) => void) {
     const user = await currentUser(req, false).catch(() => null);
+    const chay = async (ai: boolean) => {
+      if (onCung) {
+        const usage = newUsage();
+        return { report: await svc.baoCaoStream(body, ai, onCung, usage), usage };
+      }
+      return svc.baoCao(body, ai);
+    };
     if (!body.use_llm) {
-      const r = onCung ? await svc.baoCaoStream(body, false, onCung) : await svc.baoCao(body, false);
+      const { report: r } = await chay(false);
       svc.ghiLog(body, false, r, user?.id ?? null);
       return { ...r };
     }
     const q = await quyenLlm(req);
     if (q.noiBo) {
-      const r = onCung ? await svc.baoCaoStream(body, true, onCung) : await svc.baoCao(body, true);
-      svc.ghiLog(body, true, r, user?.id ?? null);
+      await svc.kiemTraNganSach();
+      const { report: r, usage } = await chay(true);
+      svc.ghiLog(body, true, r, user?.id ?? null, usage);
       return { ...r };
     }
     const key = chartKey(body);
@@ -92,12 +101,14 @@ export async function coreRoutes(app: FastifyInstance) {
     if ((await app.billing.credits(q.userId)).credits_left <= 0) {
       throw new HttpError(402, "Bạn đã dùng hết lượt luận giải chuyên sâu. Mua thêm gói để mở khoá lá số này.");
     }
+    await svc.kiemTraNganSach();
     const sections: LuanCung[] = [];
+    const usage = newUsage();
     const r = await svc.baoCaoStream(body, true, (k) => {
       sections.push(k);
       onCung?.(k);
-    });
-    svc.ghiLog(body, true, r, q.userId);
+    }, usage);
+    svc.ghiLog(body, true, r, q.userId, usage);
     const soCungAi = r.per_cung.filter((x) => x.mode === "llm").length;
     let charged = false;
     if (soCungAi >= MIN_CUNG_AI()) {
@@ -114,10 +125,10 @@ export async function coreRoutes(app: FastifyInstance) {
     };
   }
 
-  app.post("/v1/luan-giai", tag(["luận giải"], ReportInput, {
+  app.post("/v1/luan-giai", { ...app.limit(60, "1 hour", true), ...tag(["luận giải"], ReportInput, {
     summary: "Báo cáo luận giải 12 cung (đã qua Guardrail). use_llm=true: AI, cần X-API-Key hoặc đăng nhập + còn lượt",
-    security: [{ apiKey: [] }, { bearer: [] }, {}],
-  }), async (req) => {
+    security: [{ apiKey: [] }, { bearer: [] }, { cookie: [] }, {}],
+  }) }, async (req) => {
     const body = parse(ReportInput, req.body);
     svc.tinhLaSo(body); // lỗi đầu vào → 400 trước khi kiểm tra quyền/lượt
     return luanGiai(req, body);
@@ -132,16 +143,18 @@ export async function coreRoutes(app: FastifyInstance) {
    *   event: error    → {detail}
    * Lỗi quyền/lượt (401/402) trả HTTP bình thường, trước khi mở stream.
    */
-  app.post("/v1/luan-giai/stream", tag(["luận giải"], ReportInput, {
-    summary: "Luận giải 12 cung dạng SSE (text/event-stream)", security: [{ apiKey: [] }, { bearer: [] }, {}],
-  }), async (req, reply) => {
+  app.post("/v1/luan-giai/stream", { ...app.limit(60, "1 hour", true), ...tag(["luận giải"], ReportInput, {
+    summary: "Luận giải 12 cung dạng SSE (text/event-stream)", security: [{ apiKey: [] }, { bearer: [] }, { cookie: [] }, {}],
+  }) }, async (req, reply) => {
     const body = parse(ReportInput, req.body);
     const chart = svc.tinhLaSo(body);
     if (body.use_llm) {
       const q = await quyenLlm(req);
-      if (!q.noiBo && !(await app.billing.unlocked(q.userId, chartKey(body))) && (await app.billing.credits(q.userId)).credits_left <= 0) {
+      const daMoKhoa = !q.noiBo && Boolean(await app.billing.unlocked(q.userId, chartKey(body)));
+      if (!q.noiBo && !daMoKhoa && (await app.billing.credits(q.userId)).credits_left <= 0) {
         throw new HttpError(402, "Bạn đã dùng hết lượt luận giải chuyên sâu. Mua thêm gói để mở khoá lá số này.");
       }
+      if (!daMoKhoa) await svc.kiemTraNganSach();
     }
 
     reply.hijack();

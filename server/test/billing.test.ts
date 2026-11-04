@@ -30,6 +30,7 @@ beforeAll(async () => {
   db = await createDb(url);
   app = await buildApp({
     db,
+    rateLimit: false,
     llm: async (p) => {
       llmCalls++;
       if (llmMode === "fail") return null;
@@ -47,8 +48,10 @@ afterAll(async () => {
 const req = (method: "GET" | "POST" | "PUT", url: string, token?: string, payload?: object, headers: Record<string, string> = {}) =>
   app.inject({ method, url, payload, headers: { ...(token ? { authorization: `Bearer ${token}` } : {}), ...headers } });
 
+/** Đăng ký + đánh dấu email đã xác thực (điều kiện để mua gói). */
 async function user(email: string) {
   const r = await req("POST", "/v1/auth/register", undefined, { email, password: "12345678" });
+  await db.query("UPDATE users SET email_verified_at = now() WHERE lower(email) = lower($1)", [email]);
   return r.json().token as string;
 }
 const admin = async () => (await req("POST", "/v1/auth/login", undefined, { email: ENV.ADMIN_EMAIL, password: ENV.ADMIN_PASSWORD })).json().token as string;

@@ -11,8 +11,10 @@
  * Tài liệu OpenAPI: GET /docs.
  * Lỗi kiểu dữ liệu → 422 {detail: [...]}; lỗi giá trị → 400 {error}; lỗi khác → {detail}.
  */
+import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 import fastifyJwt from "@fastify/jwt";
+import rateLimit from "@fastify/rate-limit";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import Fastify, { type FastifyInstance } from "fastify";
@@ -23,7 +25,8 @@ import { KbStore } from "../agents/kbStore.js";
 import { createDb, type Db } from "../db/index.js";
 import { InputError } from "../engine/tuviEngine.js";
 import { hashPassword } from "../lib/password.js";
-import { HttpError, ValidationError } from "./http.js";
+import { createMailer, type Mailer } from "../email/mailer.js";
+import { HttpError, ValidationError, canCsrfHeader } from "./http.js";
 import { Billing } from "../billing/billing.js";
 import { adminBillingRoutes } from "./routes/adminBilling.js";
 import { adminRoutes } from "./routes/admin.js";
@@ -40,6 +43,9 @@ export interface AppOptions {
   kbSeed?: () => KB;
   llm?: ia.LlmFn;
   logger?: boolean;
+  /** Bật giới hạn số request (mặc định bật; test tắt để không vướng giới hạn). */
+  rateLimit?: boolean;
+  mailer?: Mailer;
 }
 
 declare module "fastify" {
@@ -47,6 +53,9 @@ declare module "fastify" {
     svc: ChartService;
     db: Db;
     billing: Billing;
+    mailer: Mailer;
+    /** Cấu hình giới hạn request cho route; trả {} khi tắt giới hạn. */
+    limit: (max: number, timeWindow: string, theoNguoiDung?: boolean) => object;
   }
 }
 
@@ -65,18 +74,21 @@ async function bootstrapAdmin(db: Db): Promise<void> {
   if (!email || !pw) return;
   const hash = await hashPassword(pw);
   await db.query(
-    `INSERT INTO users (email, name, password_hash, role) VALUES ($1, 'Admin', $2, 'admin')
-     ON CONFLICT ((lower(email))) DO UPDATE SET role = 'admin', password_hash = EXCLUDED.password_hash`,
+    `INSERT INTO users (email, name, password_hash, role, email_verified_at) VALUES ($1, 'Admin', $2, 'admin', now())
+     ON CONFLICT ((lower(email))) DO UPDATE SET role = 'admin', password_hash = EXCLUDED.password_hash,
+       email_verified_at = coalesce(users.email_verified_at, now())`,
     [email, hash]);
 }
 
 export async function buildApp(opts: AppOptions = {}): Promise<FastifyInstance> {
-  const app = Fastify({ logger: opts.logger ?? false, bodyLimit: 1 << 20 });
+  // TRUST_PROXY=1 khi chạy sau load balancer/reverse proxy để lấy đúng IP người dùng (giới hạn request theo IP)
+  const app = Fastify({ logger: opts.logger ?? false, bodyLimit: 1 << 20, trustProxy: process.env.TRUST_PROXY === "1" });
   const db = opts.db ?? (await createDb());
   const kb = await KbStore.open(db, opts.kbSeed);
   await bootstrapAdmin(db);
   app.decorate("db", db);
   app.decorate("billing", new Billing(db));
+  app.decorate("mailer", opts.mailer ?? (await createMailer(db, app.log)));
   app.decorate("svc", new ChartService(db, kb, opts.llm ?? ia.generateLlm, app.log));
   if (!opts.db) app.addHook("onClose", async () => db.close());
 
@@ -84,7 +96,34 @@ export async function buildApp(opts: AppOptions = {}): Promise<FastifyInstance> 
     origin: (process.env.CORS_ORIGINS ?? "http://localhost:3000,http://localhost:3001")
       .split(",").map((o) => o.trim()).filter(Boolean),
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-API-Key"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-API-Key", "X-Tuvi-Csrf"],
+    credentials: true, // cookie phiên đăng nhập
+  });
+  await app.register(cookie);
+  const coGioiHan = opts.rateLimit ?? process.env.RATE_LIMIT !== "0";
+  await app.register(rateLimit, { global: false });
+  app.decorate("limit", (max: number, timeWindow: string, theoNguoiDung = false) => (coGioiHan ? {
+    config: {
+      rateLimit: {
+        max, timeWindow,
+        // theo người dùng: lấy id từ phiên nếu có (không xác thực lại ở đây, chỉ để chia "xô"), nếu không thì theo IP
+        keyGenerator: (req: { ip: string; cookies?: Record<string, string | undefined>; headers: Record<string, unknown> }) => {
+          if (!theoNguoiDung) return req.ip;
+          const tok = (req.headers.authorization as string | undefined)?.replace(/^Bearer /, "") ?? req.cookies?.tuvi_session;
+          try {
+            return tok ? "u:" + (app.jwt.decode<{ sub: string }>(tok)?.sub ?? req.ip) : req.ip;
+          } catch {
+            return req.ip;
+          }
+        },
+        errorResponseBuilder: (_r: unknown, ctx: { after: string }) => ({
+          statusCode: 429, detail: `Bạn thao tác quá nhanh, thử lại sau ${ctx.after}.`,
+        }),
+      },
+    },
+  } : {}));
+  app.addHook("onRequest", async (req) => {
+    if (canCsrfHeader(req)) throw new HttpError(403, "Thiếu header X-Tuvi-Csrf (chống CSRF cho phiên cookie)");
   });
   await app.register(fastifyJwt, { secret: jwtSecret(app.log), sign: { expiresIn: process.env.JWT_EXPIRES_IN || "7d" } });
 
@@ -93,7 +132,13 @@ export async function buildApp(opts: AppOptions = {}): Promise<FastifyInstance> 
   await app.register(swagger, {
     openapi: {
       info: { title: "Tử Vi API", version: "2.0.0", description: "Backend Tử Vi (Node.js). Lá số tất định, luận giải grounded + Guardrail." },
-      components: { securitySchemes: { bearer: { type: "http", scheme: "bearer" }, apiKey: { type: "apiKey", in: "header", name: "X-API-Key" } } },
+      components: {
+        securitySchemes: {
+          bearer: { type: "http", scheme: "bearer" },
+          cookie: { type: "apiKey", in: "cookie", name: "tuvi_session" },
+          apiKey: { type: "apiKey", in: "header", name: "X-API-Key" },
+        },
+      },
     },
   });
   await app.register(swaggerUi, { routePrefix: "/docs" });
@@ -103,6 +148,7 @@ export async function buildApp(opts: AppOptions = {}): Promise<FastifyInstance> 
     if (err instanceof InputError) return reply.status(400).send({ error: err.message });
     if (err instanceof HttpError) return reply.status(err.statusCode).send({ detail: err.detail });
     const e = err as { statusCode?: number; message?: string };
+    if (e.statusCode === 429) return reply.status(429).send(err);
     if (e.statusCode && e.statusCode < 500) return reply.status(e.statusCode).send({ detail: e.message });
     app.log.error(err);
     return reply.status(500).send({ detail: "Internal Server Error" });

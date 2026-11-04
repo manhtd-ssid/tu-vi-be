@@ -5,7 +5,7 @@ import { buildApp } from "../src/api/app.js";
 
 let app: FastifyInstance;
 beforeAll(async () => {
-  app = await buildApp({ llm: async () => null });
+  app = await buildApp({ llm: async () => null, rateLimit: false });
 });
 afterEach(() => {
   delete process.env.API_KEY;

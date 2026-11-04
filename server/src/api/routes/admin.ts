@@ -43,7 +43,7 @@ export async function adminRoutes(app: FastifyInstance) {
     const where = q ? "WHERE u.email ILIKE $1 OR u.name ILIKE $1" : "WHERE $1::text IS NULL";
     const p = q ? like(q) : null;
     const items = await db.query(
-      `SELECT u.id, u.email, u.name, u.role, u.created_at, u.last_login_at,
+      `SELECT u.id, u.email, u.name, u.role, u.created_at, u.last_login_at, (u.email_verified_at IS NOT NULL) AS email_verified,
               (SELECT count(*)::int FROM saved_charts c WHERE c.user_id = u.id) AS saved_charts
        FROM users u ${where} ORDER BY u.created_at DESC, u.id DESC LIMIT $2 OFFSET $3`, [p, limit, offset]);
     const [{ total }] = await db.query<{ total: number }>(`SELECT count(*)::int AS total FROM users u ${where}`, [p]);
@@ -117,7 +117,8 @@ export async function adminRoutes(app: FastifyInstance) {
     if (use_llm) { params.push(use_llm === "true"); cond.push(`l.use_llm = $${params.length}`); }
     const where = cond.length ? "WHERE " + cond.join(" AND ") : "";
     const items = await db.query(
-      `SELECT l.id, l.user_id, u.email AS user_email, l.input, l.use_llm, l.verdict, l.guardrail_tong, l.blocked, l.per_cung, l.created_at
+      `SELECT l.id, l.user_id, u.email AS user_email, l.input, l.use_llm, l.verdict, l.guardrail_tong, l.blocked, l.per_cung, l.created_at,
+              l.loai, l.llm_model, l.llm_calls, l.input_tokens, l.output_tokens, l.cost_usd::float AS cost_usd
        FROM luan_giai_logs l LEFT JOIN users u ON u.id = l.user_id ${where}
        ORDER BY l.created_at DESC, l.id DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
       [...params, limit, offset]);
