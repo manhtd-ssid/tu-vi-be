@@ -44,7 +44,7 @@ export async function adminRoutes(app: FastifyInstance) {
     const where = q ? "WHERE u.email ILIKE $1 OR u.name ILIKE $1" : "WHERE $1::text IS NULL";
     const p = q ? like(q) : null;
     const items = await db.query(
-      `SELECT u.id, u.email, u.name, u.role, u.created_at, u.last_login_at, (u.email_verified_at IS NOT NULL) AS email_verified,
+      `SELECT u.id, u.email, u.name, u.role, u.created_at, u.last_login_at, (u.email_verified_at IS NOT NULL) AS email_verified, (u.google_sub IS NOT NULL) AS google,
               (SELECT count(*)::int FROM saved_charts c WHERE c.user_id = u.id) AS saved_charts
        FROM users u ${where} ORDER BY u.created_at DESC, u.id DESC LIMIT $2 OFFSET $3`, [p, limit, offset]);
     const [{ total }] = await db.query<{ total: number }>(`SELECT count(*)::int AS total FROM users u ${where}`, [p]);
