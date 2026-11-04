@@ -1,0 +1,1092 @@
+{
+ "saoTuVi": {
+  "saoID": 1,
+  "saoTen": "Tử vi",
+  "saoNguHanh": "O",
+  "saoLoai": 1,
+  "saoPhuongVi": "Đế tinh",
+  "saoAmDuong": 1,
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoLiemTrinh": {
+  "saoID": 2,
+  "saoTen": "Liêm trinh",
+  "saoNguHanh": "H",
+  "saoLoai": 1,
+  "saoPhuongVi": "Bắc đẩu tinh",
+  "saoAmDuong": 1,
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoThienDong": {
+  "saoID": 3,
+  "saoTen": "Thiên đồng",
+  "saoNguHanh": "T",
+  "saoLoai": 1,
+  "saoPhuongVi": "Bắc đẩu tinh",
+  "saoAmDuong": 1,
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoVuKhuc": {
+  "saoID": 4,
+  "saoTen": "Vũ khúc",
+  "saoNguHanh": "K",
+  "saoLoai": 1,
+  "saoPhuongVi": "Bắc đẩu tinh",
+  "saoAmDuong": -1,
+  "vongTrangSinh": 0,
+  "cssSao": "hanhKim"
+ },
+ "saoThaiDuong": {
+  "saoID": 5,
+  "saoTen": "Thái Dương",
+  "saoNguHanh": "H",
+  "saoLoai": 1,
+  "saoPhuongVi": "Nam đẩu tinh",
+  "saoAmDuong": 1,
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoThienCo": {
+  "saoID": 6,
+  "saoTen": "Thiên cơ",
+  "saoNguHanh": "M",
+  "saoLoai": 1,
+  "saoPhuongVi": "Nam đẩu tinh",
+  "saoAmDuong": -1,
+  "vongTrangSinh": 0,
+  "cssSao": "hanhMoc"
+ },
+ "saoThienPhu": {
+  "saoID": 7,
+  "saoTen": "Thiên phủ",
+  "saoNguHanh": "O",
+  "saoLoai": 1,
+  "saoPhuongVi": "Nam đẩu tinh",
+  "saoAmDuong": 1,
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoThaiAm": {
+  "saoID": 8,
+  "saoTen": "Thái âm",
+  "saoNguHanh": "T",
+  "saoLoai": 1,
+  "saoPhuongVi": "Bắc đẩu tinh",
+  "saoAmDuong": -1,
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoThamLang": {
+  "saoID": 9,
+  "saoTen": "Tham lang",
+  "saoNguHanh": "T",
+  "saoLoai": 1,
+  "saoPhuongVi": "Bắc đẩu tinh",
+  "saoAmDuong": -1,
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoCuMon": {
+  "saoID": 10,
+  "saoTen": "Cự môn",
+  "saoNguHanh": "T",
+  "saoLoai": 1,
+  "saoPhuongVi": "Bắc đẩu tinh",
+  "saoAmDuong": -1,
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoThienTuong": {
+  "saoID": 11,
+  "saoTen": "Thiên tướng",
+  "saoNguHanh": "T",
+  "saoLoai": 1,
+  "saoPhuongVi": "Nam đẩu tinh",
+  "saoAmDuong": 1,
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoThienLuong": {
+  "saoID": 12,
+  "saoTen": "Thiên lương",
+  "saoNguHanh": "M",
+  "saoLoai": 1,
+  "saoPhuongVi": "Nam đẩu tinh",
+  "saoAmDuong": -1,
+  "vongTrangSinh": 0,
+  "cssSao": "hanhMoc"
+ },
+ "saoThatSat": {
+  "saoID": 13,
+  "saoTen": "Thất sát",
+  "saoNguHanh": "K",
+  "saoLoai": 1,
+  "saoPhuongVi": "Nam đẩu tinh",
+  "saoAmDuong": 1,
+  "vongTrangSinh": 0,
+  "cssSao": "hanhKim"
+ },
+ "saoPhaQuan": {
+  "saoID": 14,
+  "saoTen": "Phá quân",
+  "saoNguHanh": "T",
+  "saoLoai": 1,
+  "saoPhuongVi": "Bắc đẩu tinh",
+  "saoAmDuong": -1,
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoThaiTue": {
+  "saoID": 15,
+  "saoTen": "Thái tuế",
+  "saoNguHanh": "H",
+  "saoLoai": 15,
+  "saoPhuongVi": "",
+  "saoAmDuong": 0,
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoThieuDuong": {
+  "saoID": 16,
+  "saoTen": "Thiếu dương",
+  "saoNguHanh": "H",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoTangMon": {
+  "saoID": 17,
+  "saoTen": "Tang môn",
+  "saoNguHanh": "M",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhMoc"
+ },
+ "saoThieuAm": {
+  "saoID": 18,
+  "saoTen": "Thiếu âm",
+  "saoNguHanh": "T",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoQuanPhu3": {
+  "saoID": 19,
+  "saoTen": "Quan phù",
+  "saoNguHanh": "H",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoTuPhu": {
+  "saoID": 20,
+  "saoTen": "Tử phù",
+  "saoNguHanh": "K",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhKim"
+ },
+ "saoTuePha": {
+  "saoID": 21,
+  "saoTen": "Tuế phá",
+  "saoNguHanh": "H",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoLongDuc": {
+  "saoID": 22,
+  "saoTen": "Long đức",
+  "saoNguHanh": "T",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoBachHo": {
+  "saoID": 23,
+  "saoTen": "Bạch hổ",
+  "saoNguHanh": "K",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhKim"
+ },
+ "saoPhucDuc": {
+  "saoID": 24,
+  "saoTen": "Phúc đức",
+  "saoNguHanh": "O",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoDieuKhach": {
+  "saoID": 25,
+  "saoTen": "Điếu khách",
+  "saoNguHanh": "H",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoTrucPhu": {
+  "saoID": 26,
+  "saoTen": "Trực phù",
+  "saoNguHanh": "K",
+  "saoLoai": 16,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhKim"
+ },
+ "saoLocTon": {
+  "saoID": 27,
+  "saoTen": "Lộc tồn",
+  "saoNguHanh": "O",
+  "saoLoai": 3,
+  "saoPhuongVi": "Bắc đẩu tinh",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoBacSy": {
+  "saoID": 109,
+  "saoTen": "Bác sỹ",
+  "saoNguHanh": "T",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoLucSi": {
+  "saoID": 28,
+  "saoTen": "Lực sĩ",
+  "saoNguHanh": "H",
+  "saoLoai": 2,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoThanhLong": {
+  "saoID": 29,
+  "saoTen": "Thanh long",
+  "saoNguHanh": "T",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoTieuHao": {
+  "saoID": 30,
+  "saoTen": "Tiểu hao",
+  "saoNguHanh": "H",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoTuongQuan": {
+  "saoID": 31,
+  "saoTen": "Tướng quân",
+  "saoNguHanh": "M",
+  "saoLoai": 4,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhMoc"
+ },
+ "saoTauThu": {
+  "saoID": 32,
+  "saoTen": "Tấu thư",
+  "saoNguHanh": "K",
+  "saoLoai": 3,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhKim"
+ },
+ "saoPhiLiem": {
+  "saoID": 33,
+  "saoTen": "Phi liêm",
+  "saoNguHanh": "H",
+  "saoLoai": 2,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoHyThan": {
+  "saoID": 34,
+  "saoTen": "Hỷ thần",
+  "saoNguHanh": "H",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoBenhPhu": {
+  "saoID": 35,
+  "saoTen": "Bệnh phù",
+  "saoNguHanh": "O",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoDaiHao": {
+  "saoID": 36,
+  "saoTen": "Đại hao",
+  "saoNguHanh": "H",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoPhucBinh": {
+  "saoID": 37,
+  "saoTen": "Phục binh",
+  "saoNguHanh": "H",
+  "saoLoai": 13,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoQuanPhu2": {
+  "saoID": 38,
+  "saoTen": "Quan phù",
+  "saoNguHanh": "H",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoTrangSinh": {
+  "saoID": 39,
+  "saoTen": "Tràng sinh",
+  "saoNguHanh": "T",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 1,
+  "cssSao": "hanhThuy"
+ },
+ "saoMocDuc": {
+  "saoID": 40,
+  "saoTen": "Mộc dục",
+  "saoNguHanh": "T",
+  "saoLoai": 14,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 1,
+  "cssSao": "hanhThuy"
+ },
+ "saoQuanDoi": {
+  "saoID": 41,
+  "saoTen": "Quan đới",
+  "saoNguHanh": "K",
+  "saoLoai": 4,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 1,
+  "cssSao": "hanhKim"
+ },
+ "saoLamQuan": {
+  "saoID": 42,
+  "saoTen": "Lâm quan",
+  "saoNguHanh": "K",
+  "saoLoai": 7,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 1,
+  "cssSao": "hanhKim"
+ },
+ "saoDeVuong": {
+  "saoID": 43,
+  "saoTen": "Đế vượng",
+  "saoNguHanh": "K",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 1,
+  "cssSao": "hanhKim"
+ },
+ "saoSuy": {
+  "saoID": 44,
+  "saoTen": "Suy",
+  "saoNguHanh": "T",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 1,
+  "cssSao": "hanhThuy"
+ },
+ "saoBenh": {
+  "saoID": 45,
+  "saoTen": "Bệnh",
+  "saoNguHanh": "H",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 1,
+  "cssSao": "hanhHoa"
+ },
+ "saoTu": {
+  "saoID": 46,
+  "saoTen": "Tử",
+  "saoNguHanh": "H",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 1,
+  "cssSao": "hanhHoa"
+ },
+ "saoMo": {
+  "saoID": 47,
+  "saoTen": "Mộ",
+  "saoNguHanh": "O",
+  "saoLoai": 2,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 1,
+  "cssSao": "hanhTho"
+ },
+ "saoTuyet": {
+  "saoID": 48,
+  "saoTen": "Tuyệt",
+  "saoNguHanh": "O",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 1,
+  "cssSao": "hanhTho"
+ },
+ "saoThai": {
+  "saoID": 49,
+  "saoTen": "Thai",
+  "saoNguHanh": "O",
+  "saoLoai": 14,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 1,
+  "cssSao": "hanhTho"
+ },
+ "saoDuong": {
+  "saoID": 50,
+  "saoTen": "Dưỡng",
+  "saoNguHanh": "M",
+  "saoLoai": 2,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 1,
+  "cssSao": "hanhMoc"
+ },
+ "saoDaLa": {
+  "saoID": 51,
+  "saoTen": "Đà la",
+  "saoNguHanh": "K",
+  "saoLoai": 11,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhKim"
+ },
+ "saoKinhDuong": {
+  "saoID": 52,
+  "saoTen": "Kình dương",
+  "saoNguHanh": "K",
+  "saoLoai": 11,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhKim"
+ },
+ "saoDiaKhong": {
+  "saoID": 53,
+  "saoTen": "Địa không",
+  "saoNguHanh": "H",
+  "saoLoai": 11,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoDiaKiep": {
+  "saoID": 54,
+  "saoTen": "Địa kiếp",
+  "saoNguHanh": "H",
+  "saoLoai": 11,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoLinhTinh": {
+  "saoID": 55,
+  "saoTen": "Linh tinh",
+  "saoNguHanh": "H",
+  "saoLoai": 11,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoHoaTinh": {
+  "saoID": 56,
+  "saoTen": "Hỏa tinh",
+  "saoNguHanh": "H",
+  "saoLoai": 11,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoVanXuong": {
+  "saoID": 57,
+  "saoTen": "Văn xương",
+  "saoNguHanh": "K",
+  "saoLoai": 6,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhKim"
+ },
+ "saoVanKhuc": {
+  "saoID": 58,
+  "saoTen": "Văn Khúc",
+  "saoNguHanh": "T",
+  "saoLoai": 6,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoThienKhoi": {
+  "saoID": 59,
+  "saoTen": "Thiên khôi",
+  "saoNguHanh": "H",
+  "saoLoai": 6,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoThienViet": {
+  "saoID": 60,
+  "saoTen": "Thiên việt",
+  "saoNguHanh": "H",
+  "saoLoai": 6,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoTaPhu": {
+  "saoID": 61,
+  "saoTen": "Tả phù",
+  "saoNguHanh": "O",
+  "saoLoai": 2,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoHuuBat": {
+  "saoID": 62,
+  "saoTen": "Hữu bật",
+  "saoNguHanh": "O",
+  "saoLoai": 2,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoLongTri": {
+  "saoID": 63,
+  "saoTen": "Long trì",
+  "saoNguHanh": "T",
+  "saoLoai": 3,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoPhuongCac": {
+  "saoID": 64,
+  "saoTen": "Phượng các",
+  "saoNguHanh": "O",
+  "saoLoai": 3,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoTamThai": {
+  "saoID": 65,
+  "saoTen": "Tam thai",
+  "saoNguHanh": "M",
+  "saoLoai": 7,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhMoc"
+ },
+ "saoBatToa": {
+  "saoID": 66,
+  "saoTen": "Bát tọa",
+  "saoNguHanh": "T",
+  "saoLoai": 7,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoAnQuang": {
+  "saoID": 67,
+  "saoTen": "Ân quang",
+  "saoNguHanh": "M",
+  "saoLoai": 3,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhMoc"
+ },
+ "saoThienQuy": {
+  "saoID": 68,
+  "saoTen": "Thiên quý",
+  "saoNguHanh": "O",
+  "saoLoai": 3,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoThienKhoc": {
+  "saoID": 69,
+  "saoTen": "Thiên khốc",
+  "saoNguHanh": "T",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoThienHu": {
+  "saoID": 70,
+  "saoTen": "Thiên hư",
+  "saoNguHanh": "T",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoThienDuc": {
+  "saoID": 71,
+  "saoTen": "Thiên đức",
+  "saoNguHanh": "H",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoNguyetDuc": {
+  "saoID": 72,
+  "saoTen": "Nguyệt đức",
+  "saoNguHanh": "H",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoThienHinh": {
+  "saoID": 73,
+  "saoTen": "Thiên hình",
+  "saoNguHanh": "H",
+  "saoLoai": 15,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoThienRieu": {
+  "saoID": 74,
+  "saoTen": "Thiên riêu",
+  "saoNguHanh": "T",
+  "saoLoai": 13,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoThienY": {
+  "saoID": 75,
+  "saoTen": "Thiên y",
+  "saoNguHanh": "T",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoQuocAn": {
+  "saoID": 76,
+  "saoTen": "Quốc ấn",
+  "saoNguHanh": "O",
+  "saoLoai": 6,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoDuongPhu": {
+  "saoID": 77,
+  "saoTen": "Đường phù",
+  "saoNguHanh": "M",
+  "saoLoai": 4,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhMoc"
+ },
+ "saoDaoHoa": {
+  "saoID": 78,
+  "saoTen": "Đào hoa",
+  "saoNguHanh": "M",
+  "saoLoai": 8,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhMoc"
+ },
+ "saoHongLoan": {
+  "saoID": 79,
+  "saoTen": "Hồng loan",
+  "saoNguHanh": "T",
+  "saoLoai": 8,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoThienHy": {
+  "saoID": 80,
+  "saoTen": "Thiên hỷ",
+  "saoNguHanh": "T",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoThienGiai": {
+  "saoID": 81,
+  "saoTen": "Thiên giải",
+  "saoNguHanh": "H",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoDiaGiai": {
+  "saoID": 82,
+  "saoTen": "Địa giải",
+  "saoNguHanh": "O",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoGiaiThan": {
+  "saoID": 83,
+  "saoTen": "Giải thần",
+  "saoNguHanh": "M",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhMoc"
+ },
+ "saoThaiPhu": {
+  "saoID": 84,
+  "saoTen": "Thai phụ",
+  "saoNguHanh": "K",
+  "saoLoai": 6,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhKim"
+ },
+ "saoPhongCao": {
+  "saoID": 85,
+  "saoTen": "Phong cáo",
+  "saoNguHanh": "O",
+  "saoLoai": 4,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoThienTai": {
+  "saoID": 86,
+  "saoTen": "Thiên tài",
+  "saoNguHanh": "O",
+  "saoLoai": 2,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoThienTho": {
+  "saoID": 87,
+  "saoTen": "Thiên thọ",
+  "saoNguHanh": "O",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoThienThuong": {
+  "saoID": 88,
+  "saoTen": "Thiên thương",
+  "saoNguHanh": "O",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoThienSu": {
+  "saoID": 89,
+  "saoTen": "Thiên sứ",
+  "saoNguHanh": "T",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoThienLa": {
+  "saoID": 90,
+  "saoTen": "Thiên la",
+  "saoNguHanh": "O",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoDiaVong": {
+  "saoID": 91,
+  "saoTen": "Địa võng",
+  "saoNguHanh": "O",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoHoaKhoa": {
+  "saoID": 92,
+  "saoTen": "Hóa khoa",
+  "saoNguHanh": "T",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoHoaQuyen": {
+  "saoID": 93,
+  "saoTen": "Hóa quyền",
+  "saoNguHanh": "T",
+  "saoLoai": 4,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoHoaLoc": {
+  "saoID": 94,
+  "saoTen": "Hóa lộc",
+  "saoNguHanh": "M",
+  "saoLoai": 3,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhMoc"
+ },
+ "saoHoaKy": {
+  "saoID": 95,
+  "saoTen": "Hóa kỵ",
+  "saoNguHanh": "T",
+  "saoLoai": 13,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoCoThan": {
+  "saoID": 96,
+  "saoTen": "Cô thần",
+  "saoNguHanh": "O",
+  "saoLoai": 13,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoQuaTu": {
+  "saoID": 97,
+  "saoTen": "Quả tú",
+  "saoNguHanh": "O",
+  "saoLoai": 13,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoThienMa": {
+  "saoID": 98,
+  "saoTen": "Thiên mã",
+  "saoNguHanh": "H",
+  "saoLoai": 3,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoPhaToai": {
+  "saoID": 99,
+  "saoTen": "Phá toái",
+  "saoNguHanh": "H",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoThienQuan": {
+  "saoID": 100,
+  "saoTen": "Thiên quan",
+  "saoNguHanh": "H",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoThienPhuc": {
+  "saoID": 101,
+  "saoTen": "Thiên phúc",
+  "saoNguHanh": "H",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoLuuHa": {
+  "saoID": 102,
+  "saoTen": "Lưu hà",
+  "saoNguHanh": "T",
+  "saoLoai": 12,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ },
+ "saoThienTru": {
+  "saoID": 103,
+  "saoTen": "Thiên trù",
+  "saoNguHanh": "O",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhTho"
+ },
+ "saoKiepSat": {
+  "saoID": 104,
+  "saoTen": "Kiếp sát",
+  "saoNguHanh": "H",
+  "saoLoai": 11,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoHoaCai": {
+  "saoID": 105,
+  "saoTen": "Hoa cái",
+  "saoNguHanh": "K",
+  "saoLoai": 14,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhKim"
+ },
+ "saoVanTinh": {
+  "saoID": 106,
+  "saoTen": "Văn tinh",
+  "saoNguHanh": "H",
+  "saoLoai": 6,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoDauQuan": {
+  "saoID": 107,
+  "saoTen": "Đẩu quân",
+  "saoNguHanh": "H",
+  "saoLoai": 5,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhHoa"
+ },
+ "saoThienKhong": {
+  "saoID": 108,
+  "saoTen": "Thiên không",
+  "saoNguHanh": "T",
+  "saoLoai": 11,
+  "saoPhuongVi": "",
+  "saoAmDuong": "",
+  "vongTrangSinh": 0,
+  "cssSao": "hanhThuy"
+ }
+}
