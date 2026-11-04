@@ -20,8 +20,9 @@ export interface Plan {
 
 export interface Order {
   id: number; code: string; user_id: number; plan_code: string; amount: number; credits: number;
-  valid_days: number; status: "pending" | "paid" | "cancelled"; created_at: string; expires_at: string;
+  valid_days: number; status: "pending" | "paid" | "cancelled" | "refunded"; created_at: string; expires_at: string;
   paid_at: string | null; paid_by: string | null; note: string;
+  refunded_at?: string | null; refund_amount?: number | null; refund_note?: string | null;
 }
 
 export function newOrderCode(): string {
@@ -61,7 +62,7 @@ export function paymentInfo(order: Pick<Order, "code" | "amount">): PaymentInfo 
 
 export const billingConfigured = () => Boolean(process.env.SEPAY_BANK && process.env.SEPAY_ACCOUNT_NUMBER);
 
-const ORDER_COLS = "id, code, user_id, plan_code, amount, credits, valid_days, status, created_at, expires_at, paid_at, paid_by, note";
+const ORDER_COLS = "id, code, user_id, plan_code, amount, credits, valid_days, status, created_at, expires_at, paid_at, paid_by, note, refunded_at, refund_amount";
 
 export class Billing {
   constructor(private db: Db) {}
@@ -124,8 +125,8 @@ export class Billing {
   }
 
   async credits(userId: number) {
-    const grants = await this.db.query<{ id: number; credits_total: number; credits_left: number; expires_at: string; note: string; created_at: string }>(
-      `SELECT id, credits_total, credits_left, expires_at, note, created_at FROM credit_grants
+    const grants = await this.db.query<{ id: number; credits_total: number; credits_left: number; revoked_credits: number; expires_at: string; note: string; created_at: string }>(
+      `SELECT id, credits_total, credits_left, revoked_credits, expires_at, note, created_at FROM credit_grants
        WHERE user_id = $1 ORDER BY created_at DESC`, [userId]);
     const now = Date.now();
     const left = grants.filter((g) => new Date(g.expires_at).getTime() > now).reduce((a, g) => a + g.credits_left, 0);

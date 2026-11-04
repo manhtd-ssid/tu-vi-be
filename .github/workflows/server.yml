@@ -39,7 +39,7 @@ jobs:
       - name: Test (PGlite)
         run: npm test
       - name: Test tài khoản/admin trên PostgreSQL thật
-        run: npx vitest run test/account.test.ts test/billing.test.ts test/session.test.ts test/vanNam.test.ts --no-file-parallelism
+        run: npx vitest run test/account.test.ts test/billing.test.ts test/session.test.ts test/vanNam.test.ts test/adminAudit.test.ts --no-file-parallelism
         env:
           TEST_DATABASE_URL: postgres://tuvi:tuvi@localhost:5432/tuvi
       - name: Đối chiếu engine Node ⇄ Python (phải khớp 100%)

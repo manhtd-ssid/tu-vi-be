@@ -12,7 +12,7 @@ JWT, vitest, `@anthropic-ai/sdk` + `openai` (tuỳ chọn).
 cd server
 npm install
 npm run dev          # http://127.0.0.1:8973 — tài liệu API: /docs, giao diện thử: /viewer
-npm test             # 98 test
+npm test             # 103 test
 npm run build && npm start
 ```
 
@@ -96,6 +96,15 @@ Khác bản Python (có chủ đích):
 - **Giới hạn request** (`@fastify/rate-limit`, lưu trong bộ nhớ — chạy nhiều instance thì cần Redis): đăng nhập 20/10 phút/IP,
   đăng ký 10/giờ/IP, quên mật khẩu 5/15 phút/IP, luận giải 60/giờ/người, tạo đơn 20/giờ/người.
 
+## Nhật ký thao tác admin
+
+Mọi API `/admin/*` có ghi dữ liệu ghi một dòng `admin_audit` (admin, thao tác, đối tượng, dữ liệu trước/sau, ghi chú, IP)
+trong **cùng transaction** với thao tác: thao tác thất bại thì không có nhật ký, và không có thao tác nào thành công mà
+thiếu nhật ký. Các thao tác: `user.role`, `credits.grant`, `plan.create`, `plan.update`, `kb.update`, `order.mark_paid`,
+`order.cancel`, `order.refund`, `payment.resolve`.
+
+Doanh thu trong thống kê là tiền thực thu (đơn đã hoàn chỉ tính phần không hoàn).
+
 ## Chi phí LLM
 
 Mỗi lần luận giải ghi số lần gọi, token vào/ra, model và chi phí ước tính (USD) vào `luan_giai_logs`
@@ -139,6 +148,10 @@ kiểu chứng thực **API Key**, khoá = `SEPAY_WEBHOOK_KEY`. Định dạng w
 | `GET /admin/orders`, `POST /admin/orders/:id/mark-paid`, `POST /admin/orders/:id/cancel` | Đơn hàng |
 | `GET /admin/payment-transactions` | Giao dịch SePay đã nhận |
 | `GET/POST /admin/users/:id/credits` | Xem / cộng lượt thủ công (ghi lý do) |
+| `POST /admin/orders/:id/refund {amount, note}` | Ghi nhận hoàn tiền đơn đã trả (chuyển tiền làm ngoài hệ thống): thu hồi lượt chưa dùng, giữ lá số đã mở khoá, gửi email báo khách |
+| `POST /admin/payment-transactions/:id/resolve {note}` | Đánh dấu giao dịch không khớp đã xử lý (rời danh sách cần xem) |
+| `GET /admin/audit` | Nhật ký thao tác admin (lọc `action` theo tiền tố, `admin_id`, `target_type`, `target_id`) |
+| `GET /admin/emails` | Hộp thư đi: người nhận, loại, trạng thái gửi, lỗi (không lưu nội dung) |
 
 ## Kiểm thử
 

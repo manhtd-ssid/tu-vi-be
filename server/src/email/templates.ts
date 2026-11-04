@@ -49,3 +49,18 @@ export function receipt(to: string, o: { code: string; amount: number; credits: 
   ], { label: "Xem lá số của tôi", url: `${appUrl()}/la-so-cua-toi` });
   return { to, kind: "receipt", subject: `Biên nhận thanh toán ${o.code} — ${BRAND()}`, text, html };
 }
+
+export function refundNotice(to: string, o: { code: string; amount: number; luot_thu_hoi: number; luot_da_dung: number }): Mail {
+  const vnd = (n: number) => n.toLocaleString("vi-VN") + "đ";
+  const { html, text } = layout("Đã hoàn tiền đơn hàng", [
+    `Mã đơn: ${o.code}. Số tiền hoàn: ${vnd(o.amount)}, chuyển về tài khoản bạn đã thanh toán.`,
+    o.luot_thu_hoi
+      ? `${o.luot_thu_hoi} lượt chưa dùng của đơn này đã được thu hồi.`
+      : "Đơn này không còn lượt chưa dùng.",
+    o.luot_da_dung
+      ? `Các lá số đã mở khoá bằng ${o.luot_da_dung} lượt đã dùng vẫn được giữ, bạn đọc lại bình thường.`
+      : "",
+    "Nếu chưa nhận được tiền sau 3 ngày làm việc, hãy trả lời email này kèm mã đơn.",
+  ].filter(Boolean), { label: "Xem lá số của tôi", url: `${appUrl()}/la-so-cua-toi` });
+  return { to, kind: "refund", subject: `Hoàn tiền đơn ${o.code} — ${BRAND()}`, text, html };
+}

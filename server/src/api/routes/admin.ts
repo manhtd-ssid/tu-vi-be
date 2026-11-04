@@ -1,7 +1,8 @@
 /** API quản trị (role = admin): thống kê, người dùng, lá số, kho luận giải, log luận giải. */
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import type { KbKind } from "../../agents/kbStore.js";
+import { KbStore, type KbKind } from "../../agents/kbStore.js";
+import { ghiNhatKy } from "../../admin/audit.js";
 import { HttpError, Paging, parse, requireAdmin } from "../http.js";
 
 const sec = { tags: ["admin"], security: [{ bearer: [] }] };
@@ -55,7 +56,15 @@ export async function adminRoutes(app: FastifyInstance) {
     const { id } = parse(IdParam, req.params, "path");
     const { role } = parse(z.object({ role: z.enum(["user", "admin"]) }), req.body);
     if (id === me.id && role !== "admin") throw new HttpError(400, "Không thể tự bỏ quyền admin của chính mình");
-    const [u] = await db.query("UPDATE users SET role = $2 WHERE id = $1 RETURNING id, email, name, role, created_at, last_login_at", [id, role]);
+    const u = await db.tx(async (q) => {
+      const [truoc] = await q<{ role: string }>("SELECT role FROM users WHERE id = $1 FOR UPDATE", [id]);
+      if (!truoc) return null;
+      const [sau] = await q("UPDATE users SET role = $2 WHERE id = $1 RETURNING id, email, name, role, created_at, last_login_at", [id, role]);
+      if (truoc.role !== role) {
+        await ghiNhatKy(q, req, me, { action: "user.role", target_type: "user", target_id: id, before: { role: truoc.role }, after: { role } });
+      }
+      return sau;
+    });
     if (!u) throw new HttpError(404, "Không tìm thấy người dùng");
     return u;
   });
@@ -101,9 +110,65 @@ export async function adminRoutes(app: FastifyInstance) {
     const me = await requireAdmin(req);
     const { kind, key } = parse(KbParam, req.params, "path");
     const { data } = parse(z.object({ data: KB_DATA[kind] }), req.body);
-    const e = await kb.update(kind as KbKind, key, data, me.id);
+    const e = await db.tx(async (q) => {
+      const [truoc] = await q<{ data: unknown }>("SELECT data FROM kb_entries WHERE kind = $1 AND key = $2 FOR UPDATE", [kind, key]);
+      if (!truoc) return undefined;
+      const sau = await KbStore.updateIn(q, kind as KbKind, key, data, me.id);
+      await ghiNhatKy(q, req, me, { action: "kb.update", target_type: "kb", target_id: `${kind}/${key}`, before: truoc.data, after: data });
+      return sau;
+    });
     if (!e) throw new HttpError(404, "Không có mục này trong kho luận giải");
+    await kb.reload();
     return e;
+  });
+
+  // ---- Nhật ký thao tác admin ----
+  app.get("/admin/audit", { schema: sec }, async (req) => {
+    const { limit, offset, action, admin_id, target_type, target_id } = parse(Paging.extend({
+      action: z.string().max(50).optional(), admin_id: z.coerce.number().int().optional(),
+      target_type: z.string().max(50).optional(), target_id: z.string().max(100).optional(),
+    }), req.query, "query");
+    const cond: string[] = [];
+    const params: unknown[] = [];
+    const them = (sql: string, v: unknown) => {
+      params.push(v);
+      cond.push(sql.replace("?", `$${params.length}`));
+    };
+    if (action) them("action LIKE ?", action.replace(/[%_]/g, "") + "%");
+    if (admin_id !== undefined) them("admin_id = ?", admin_id);
+    if (target_type) them("target_type = ?", target_type);
+    if (target_id) them("target_id = ?", target_id);
+    const where = cond.length ? "WHERE " + cond.join(" AND ") : "";
+    const items = await db.query(
+      `SELECT * FROM admin_audit ${where} ORDER BY created_at DESC, id DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+      [...params, limit, offset]);
+    const [{ total }] = await db.query<{ total: number }>(`SELECT count(*)::int AS total FROM admin_audit ${where}`, params);
+    return { items, total };
+  });
+
+  // ---- Hộp thư đi (không lưu nội dung email) ----
+  app.get("/admin/emails", { schema: sec }, async (req) => {
+    const { limit, offset, status, q } = parse(Paging.extend({
+      status: z.enum(["sent", "failed", "logged"]).optional(), q: z.string().trim().max(200).default(""),
+    }), req.query, "query");
+    const cond: string[] = [];
+    const params: unknown[] = [];
+    if (status) {
+      params.push(status);
+      cond.push(`status = $${params.length}`);
+    }
+    if (q) {
+      params.push(like(q));
+      cond.push(`to_email ILIKE $${params.length}`);
+    }
+    const where = cond.length ? "WHERE " + cond.join(" AND ") : "";
+    const items = await db.query(
+      `SELECT * FROM email_outbox ${where} ORDER BY created_at DESC, id DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+      [...params, limit, offset]);
+    const [{ total }] = await db.query<{ total: number }>(`SELECT count(*)::int AS total FROM email_outbox ${where}`, params);
+    const [{ loi_24h }] = await db.query<{ loi_24h: number }>(
+      "SELECT count(*)::int AS loi_24h FROM email_outbox WHERE status = 'failed' AND created_at > now() - interval '24 hours'");
+    return { items, total, loi_24h };
   });
 
   // ---- Log luận giải ----

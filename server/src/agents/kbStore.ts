@@ -63,11 +63,17 @@ export class KbStore {
   }
 
   async update(kind: KbKind, key: string, data: unknown, userId: number | null): Promise<KbEntry | undefined> {
-    const [r] = await this.db.query<KbEntry>(
+    const r = await KbStore.updateIn(this.db.query.bind(this.db), kind, key, data, userId);
+    if (r) await this.reload();
+    return r;
+  }
+
+  /** Cập nhật trong một transaction có sẵn; người gọi tự reload() sau khi commit. */
+  static async updateIn(q: Db["query"], kind: KbKind, key: string, data: unknown, userId: number | null): Promise<KbEntry | undefined> {
+    const [r] = await q<KbEntry>(
       `UPDATE kb_entries SET data = $3, updated_at = now(), updated_by = $4
        WHERE kind = $1 AND key = $2 RETURNING kind, key, data, updated_at, updated_by`,
       [kind, key, JSON.stringify(data), userId]);
-    if (r) await this.reload();
     return r;
   }
 }

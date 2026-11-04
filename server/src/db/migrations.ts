@@ -156,4 +156,34 @@ ALTER TABLE luan_giai_logs ADD COLUMN output_tokens INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE luan_giai_logs ADD COLUMN cost_usd NUMERIC(12, 6) NOT NULL DEFAULT 0;
 CREATE INDEX luan_giai_logs_cost ON luan_giai_logs (created_at) WHERE cost_usd > 0;
 `,
+  `
+CREATE TABLE admin_audit (
+  id           SERIAL PRIMARY KEY,
+  admin_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  admin_email  TEXT NOT NULL,
+  action       TEXT NOT NULL,
+  target_type  TEXT NOT NULL,
+  target_id    TEXT NOT NULL,
+  before       JSONB,
+  after        JSONB,
+  note         TEXT NOT NULL DEFAULT '',
+  ip           TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX admin_audit_created ON admin_audit (created_at DESC);
+CREATE INDEX admin_audit_target ON admin_audit (target_type, target_id, created_at DESC);
+
+ALTER TABLE orders DROP CONSTRAINT orders_status_check;
+ALTER TABLE orders ADD CONSTRAINT orders_status_check CHECK (status IN ('pending', 'paid', 'cancelled', 'refunded'));
+ALTER TABLE orders ADD COLUMN refunded_at TIMESTAMPTZ;
+ALTER TABLE orders ADD COLUMN refund_amount INTEGER;
+ALTER TABLE orders ADD COLUMN refund_note TEXT;
+
+ALTER TABLE credit_grants ADD COLUMN revoked_at TIMESTAMPTZ;
+ALTER TABLE credit_grants ADD COLUMN revoked_credits INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE payment_transactions ADD COLUMN resolved_at TIMESTAMPTZ;
+ALTER TABLE payment_transactions ADD COLUMN resolved_by TEXT;
+ALTER TABLE payment_transactions ADD COLUMN resolve_note TEXT;
+`,
 ];
