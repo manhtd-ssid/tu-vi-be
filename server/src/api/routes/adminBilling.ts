@@ -11,6 +11,7 @@ import { HttpError, Paging, parse, requireAdmin } from "../http.js";
 import { guiBienNhan } from "./billing.js";
 import { phieu } from "../../analytics/events.js";
 import { DON_GIU_CHO, chuanHoaMa } from "../../billing/coupons.js";
+import { REFERRAL_DEFAULT, caiDatGioiThieu, thuHoiThuong } from "../../billing/referral.js";
 
 const sec = { tags: ["admin"], security: [{ bearer: [] }] };
 const IdParam = z.object({ id: z.coerce.number().int().positive() });
@@ -175,11 +176,13 @@ export async function adminBillingRoutes(app: FastifyInstance) {
       }
       await q("UPDATE orders SET status = 'refunded', refunded_at = now(), refund_amount = $2, refund_note = $3 WHERE id = $1",
         [id, b.amount, b.note]);
+      const thuHoiGt = await thuHoiThuong(q, id); // lượt thưởng người giới thiệu (nếu đơn dùng mã giới thiệu)
       const daDung = g ? g.credits_total - g.credits_left : 0;
       await ghiNhatKy(q, req, me, {
         action: "order.refund", target_type: "order", target_id: id,
         before: { status: "paid", credits_left: thuHoi },
-        after: { status: "refunded", refund_amount: b.amount, luot_thu_hoi: thuHoi, luot_da_dung_giu_lai: daDung },
+        after: { status: "refunded", refund_amount: b.amount, luot_thu_hoi: thuHoi, luot_da_dung_giu_lai: daDung,
+          ...(o.referrer_id ? { luot_thuong_gioi_thieu_thu_hoi: thuHoiGt } : {}) },
         note: b.note,
       });
       const [u] = await q<{ email: string }>("SELECT email FROM users WHERE id = $1", [o.user_id]);
@@ -268,6 +271,8 @@ export async function adminBillingRoutes(app: FastifyInstance) {
     const code = chuanHoaMa(decodeURIComponent(raw));
     if (!/^[A-Z0-9_-]{3,30}$/.test(code)) throw new HttpError(422, "Mã chỉ gồm A-Z, 0-9, dấu - hoặc _, dài 3–30 ký tự");
     const b = parse(CouponBody, req.body);
+    const [trungGt] = await db.query("SELECT 1 FROM users WHERE referral_code = $1", [code]);
+    if (trungGt) throw new HttpError(409, "Mã này đang là mã giới thiệu của một người dùng, chọn mã khác");
     if (b.plan_codes?.length) {
       const co = await db.query<{ code: string }>("SELECT code FROM plans WHERE code = ANY($1)", [b.plan_codes]);
       const thieu = b.plan_codes.filter((p) => !co.some((x) => x.code === p));
@@ -292,5 +297,55 @@ export async function adminBillingRoutes(app: FastifyInstance) {
   app.get("/admin/funnel", { schema: sec }, async (req) => {
     const { days } = parse(z.object({ days: z.coerce.number().int().min(1).max(365).default(30) }), req.query, "query");
     return phieu(app, days);
+  });
+
+  // ---- Giới thiệu bạn bè ----
+  const ReferralBody = z.object({
+    enabled: z.boolean(),
+    percent: z.number().int().min(1).max(100),
+    max_discount: z.number().int().min(1).nullable().default(null),
+    reward_credits: z.number().int().min(0).max(100),
+    reward_valid_days: z.number().int().min(1).max(3650),
+    chi_khach_moi: z.boolean(),
+    max_rewards_per_referrer: z.number().int().min(1).nullable().default(null),
+  });
+
+  app.get("/admin/referrals", { schema: sec }, async () => {
+    const settings = await caiDatGioiThieu(db.query.bind(db));
+    const thucThu = "CASE WHEN o.status = 'paid' THEN o.amount WHEN o.status = 'refunded' THEN o.amount - coalesce(o.refund_amount, 0) END";
+    const [tong] = await db.query(
+      `SELECT count(DISTINCT o.referrer_id)::int AS nguoi_gioi_thieu,
+              count(*) FILTER (WHERE o.status IN ('paid', 'refunded'))::int AS don_tra,
+              coalesce(sum(${thucThu}), 0)::bigint AS doanh_thu,
+              coalesce(sum(o.discount_amount) FILTER (WHERE o.status IN ('paid', 'refunded')), 0)::bigint AS tong_giam,
+              (SELECT coalesce(sum(credits_total - revoked_credits), 0)::int FROM credit_grants WHERE referral_order_id IS NOT NULL) AS luot_thuong
+       FROM orders o WHERE o.referrer_id IS NOT NULL`);
+    const top = await db.query(
+      `SELECT u.id AS user_id, u.email, u.referral_code,
+              count(*) FILTER (WHERE o.status IN ('paid', 'refunded'))::int AS don_tra,
+              count(DISTINCT o.user_id) FILTER (WHERE o.status IN ('paid', 'refunded'))::int AS ban_da_mua,
+              coalesce(sum(${thucThu}), 0)::bigint AS doanh_thu,
+              (SELECT coalesce(sum(g.credits_total - g.revoked_credits), 0)::int FROM credit_grants g
+                 WHERE g.user_id = u.id AND g.referral_order_id IS NOT NULL) AS luot_thuong
+       FROM orders o JOIN users u ON u.id = o.referrer_id
+       GROUP BY u.id HAVING count(*) FILTER (WHERE o.status IN ('paid', 'refunded')) > 0
+       ORDER BY don_tra DESC, doanh_thu DESC LIMIT 50`);
+    return {
+      settings, mac_dinh: REFERRAL_DEFAULT,
+      tong: { ...tong, doanh_thu: Number(tong.doanh_thu), tong_giam: Number(tong.tong_giam) },
+      top: top.map((x) => ({ ...x, doanh_thu: Number(x.doanh_thu) })),
+    };
+  });
+
+  app.put("/admin/referral-settings", { schema: sec }, async (req) => {
+    const me = await requireAdmin(req);
+    const b = parse(ReferralBody, req.body);
+    return db.tx(async (q) => {
+      const truoc = await caiDatGioiThieu(q);
+      await q(`INSERT INTO app_settings (key, value) VALUES ('referral', $1)
+               ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = now()`, [JSON.stringify(b)]);
+      await ghiNhatKy(q, req, me, { action: "referral.settings", target_type: "setting", target_id: "referral", before: truoc, after: b });
+      return b;
+    });
   });
 }

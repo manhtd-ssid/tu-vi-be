@@ -8,7 +8,8 @@
  */
 import { randomInt } from "node:crypto";
 import type { Db } from "../db/index.js";
-import { apDungMa, chuanHoaMa } from "./coupons.js";
+import { chuanHoaMa } from "./coupons.js";
+import { apDungMaBatKy, loaiMa, thuongGioiThieu } from "./referral.js";
 
 export const ORDER_PREFIX = () => (process.env.ORDER_PREFIX || "TUVI").toUpperCase();
 const ORDER_TTL_MIN = () => Number(process.env.ORDER_EXPIRES_MIN || 30);
@@ -25,6 +26,7 @@ export interface Order {
   paid_at: string | null; paid_by: string | null; note: string;
   refunded_at?: string | null; refund_amount?: number | null; refund_note?: string | null;
   original_amount?: number | null; discount_amount?: number; coupon_code?: string | null;
+  referral_code?: string | null; referrer_id?: number | null;
 }
 
 export function newOrderCode(): string {
@@ -64,7 +66,7 @@ export function paymentInfo(order: Pick<Order, "code" | "amount">): PaymentInfo 
 
 export const billingConfigured = () => Boolean(process.env.SEPAY_BANK && process.env.SEPAY_ACCOUNT_NUMBER);
 
-const ORDER_COLS = "id, code, user_id, plan_code, amount, credits, valid_days, status, created_at, expires_at, paid_at, paid_by, note, refunded_at, refund_amount, original_amount, discount_amount, coupon_code";
+const ORDER_COLS = "id, code, user_id, plan_code, amount, credits, valid_days, status, created_at, expires_at, paid_at, paid_by, note, refunded_at, refund_amount, original_amount, discount_amount, coupon_code, referral_code, referrer_id";
 
 export class Billing {
   constructor(private db: Db) {}
@@ -75,7 +77,7 @@ export class Billing {
   }
 
   /**
-   * Tạo đơn (có thể kèm mã giảm giá). Nếu người dùng đã có đơn chờ cùng gói, cùng mã, cùng giá thì dùng lại
+   * Tạo đơn (có thể kèm mã giảm giá hoặc mã giới thiệu bạn bè). Nếu người dùng đã có đơn chờ cùng gói, cùng mã, cùng giá thì dùng lại
    * (tránh tạo trùng khi tải lại trang). Mã giảm 100% → đơn 0đ được coi là đã thanh toán ngay.
    * Ném CouponError nếu mã không dùng được.
    */
@@ -84,24 +86,30 @@ export class Billing {
       const [plan] = await q<Plan>("SELECT * FROM plans WHERE code = $1 AND active", [planCode]);
       if (!plan) return null;
       const ma = couponCode ? chuanHoaMa(couponCode) : null;
+      const loai = ma ? await loaiMa(q, ma) : null;
+      const maGiam = loai === "referral" ? null : ma; // mã không tồn tại: để apDungMaBatKy báo lỗi
+      const maGt = loai === "referral" ? ma : null;
       const [reuse] = await q<Order>(
         `SELECT ${ORDER_COLS} FROM orders WHERE user_id = $1 AND plan_code = $2 AND status = 'pending'
          AND expires_at > now() + interval '5 minutes' AND coupon_code IS NOT DISTINCT FROM $3
-         AND original_amount = $4 ORDER BY id DESC LIMIT 1`, [userId, planCode, ma, plan.price]);
+         AND referral_code IS NOT DISTINCT FROM $5
+         AND original_amount = $4 ORDER BY id DESC LIMIT 1`, [userId, planCode, maGiam, plan.price, maGt]);
       // Có mã: kiểm tra lại (mã có thể vừa bị tắt/hết hạn); đơn đang giữ chỗ của chính người này không tính.
-      const kq = ma ? await apDungMa(q, ma, userId, plan, true, reuse?.id) : null;
+      const kq = ma ? await apDungMaBatKy(q, ma, userId, plan, true, reuse?.id) : null;
       const amount = kq ? kq.amount : plan.price;
       if (reuse && reuse.amount === amount) return reuse;
       for (let attempt = 0; attempt < 5; attempt++) {
         const rows = await q<Order>(
-          `INSERT INTO orders (code, user_id, plan_code, amount, credits, valid_days, expires_at, original_amount, discount_amount, coupon_code)
-           VALUES ($1, $2, $3, $4, $5, $6, now() + make_interval(mins => $7), $8, $9, $10)
+          `INSERT INTO orders (code, user_id, plan_code, amount, credits, valid_days, expires_at, original_amount, discount_amount,
+             coupon_code, referral_code, referrer_id)
+           VALUES ($1, $2, $3, $4, $5, $6, now() + make_interval(mins => $7), $8, $9, $10, $11, $12)
            ON CONFLICT (code) DO NOTHING RETURNING ${ORDER_COLS}`,
-          [newOrderCode(), userId, plan.code, amount, plan.credits, plan.valid_days, ORDER_TTL_MIN(), plan.price, kq?.discount ?? 0, ma]);
+          [newOrderCode(), userId, plan.code, amount, plan.credits, plan.valid_days, ORDER_TTL_MIN(), plan.price, kq?.discount ?? 0,
+            kq?.loai === "coupon" ? kq.code : null, kq?.loai === "referral" ? kq.code : null, kq?.referrer_id ?? null]);
         if (!rows.length) continue;
         if (amount > 0) return rows[0];
         // Đơn 0đ (mã giảm 100%): không cần chuyển khoản
-        await this.markPaid(rows[0].id, `coupon:${ma}`, q);
+        await this.markPaid(rows[0].id, `${kq?.loai ?? "coupon"}:${ma}`, q);
         const [paid] = await q<Order>(`SELECT ${ORDER_COLS} FROM orders WHERE id = $1`, [rows[0].id]);
         return paid;
       }
@@ -131,6 +139,7 @@ export class Billing {
       `INSERT INTO credit_grants (user_id, order_id, credits_total, credits_left, expires_at, note)
        VALUES ($1, $2, $3, $3, now() + make_interval(days => $4), $5)`,
       [o.user_id, o.id, o.credits, o.valid_days, `Đơn ${o.code}`]);
+    await thuongGioiThieu(q, o);
     return true;
   }
 

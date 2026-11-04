@@ -90,7 +90,7 @@ export async function phieu(app: FastifyInstance, days: number) {
 
   // Đơn và doanh thu theo gói / mã giảm giá (trong khoảng thời gian)
   const theoGoi = await app.db.query(
-    `SELECT o.plan_code, coalesce(o.coupon_code, '') AS coupon_code, count(*)::int AS don_tao,
+    `SELECT o.plan_code, coalesce(o.coupon_code, CASE WHEN o.referral_code IS NOT NULL THEN 'GIỚI THIỆU' END, '') AS coupon_code, count(*)::int AS don_tao,
             count(*) FILTER (WHERE o.status IN ('paid', 'refunded'))::int AS don_tra,
             coalesce(sum(CASE WHEN o.status = 'paid' THEN o.amount WHEN o.status = 'refunded' THEN o.amount - coalesce(o.refund_amount, 0) END), 0)::bigint AS doanh_thu,
             coalesce(sum(o.discount_amount) FILTER (WHERE o.status IN ('paid', 'refunded')), 0)::bigint AS tong_giam

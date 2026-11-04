@@ -4,13 +4,19 @@
  * Phiên đăng nhập: JWT đặt trong cookie httpOnly `tuvi_session` (trình duyệt) và cũng trả trong body
  * (`token`) cho client gọi API bằng header Bearer. JWT mang `tv` = token_version của người dùng;
  * đổi/đặt lại mật khẩu hoặc "đăng xuất mọi nơi" tăng token_version nên mọi phiên cũ hết hiệu lực.
+ *
+ * Đăng nhập Google: GET /v1/auth/google/start → Google → GET /v1/auth/google/callback → đặt cookie phiên rồi
+ * chuyển về trang web `/dang-nhap/google?next=...`. Tài khoản Google không có mật khẩu (password_hash NULL)
+ * cho tới khi người dùng tự đặt. Email đã có tài khoản → gắn Google vào tài khoản đó (Google đã xác thực email).
  */
 import type { FastifyInstance, FastifyReply } from "fastify";
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { resetPassword, verifyEmail } from "../../email/templates.js";
 import { hashPassword, verifyPassword } from "../../lib/password.js";
 import { track } from "../../analytics/events.js";
+import { appUrl } from "../../email/templates.js";
+import { GoogleError } from "../../auth/google.js";
 import { HttpError, SESSION_COOKIE, currentUser, jsonSchema, parse } from "../http.js";
 
 const MatKhau = z.string().min(8, "Mật khẩu tối thiểu 8 ký tự").max(200);
@@ -23,9 +29,12 @@ const UpdateMe = z.object({ name: z.string().trim().max(100) });
 
 export interface UserRow {
   id: number; email: string; name: string; role: "user" | "admin"; created_at: string; last_login_at: string | null;
-  email_verified: boolean; token_version: number;
+  email_verified: boolean; token_version: number; has_password: boolean;
 }
-const USER_COLS = "id, email, name, role, created_at, last_login_at, (email_verified_at IS NOT NULL) AS email_verified, token_version";
+const USER_COLS = "id, email, name, role, created_at, last_login_at, (email_verified_at IS NOT NULL) AS email_verified, token_version, (password_hash IS NOT NULL) AS has_password";
+const OAUTH_COOKIE = "tuvi_oauth";
+/** Chỉ cho chuyển về đường dẫn nội bộ của trang web. */
+const safeNext = (n: unknown) => (typeof n === "string" && /^\/(?![\/\\])/.test(n) ? n.slice(0, 500) : "/la-so-cua-toi");
 
 const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
 const HAN = { verify: "24 hours", reset: "30 minutes" } as const;
@@ -93,6 +102,9 @@ export async function authRoutes(app: FastifyInstance) {
     const b = parse(Login, req.body);
     const [u] = await db.query<UserRow & { password_hash: string }>(
       `SELECT ${USER_COLS}, password_hash FROM users WHERE lower(email) = lower($1)`, [b.email.trim()]);
+    if (u && !u.password_hash) {
+      throw new HttpError(401, "Tài khoản này đăng nhập bằng Google. Bấm “Tiếp tục với Google”, hoặc dùng “Quên mật khẩu” để đặt mật khẩu.");
+    }
     if (!u || !(await verifyPassword(b.password, u.password_hash))) throw new HttpError(401, "Email hoặc mật khẩu không đúng");
     await db.query("UPDATE users SET last_login_at = now() WHERE id = $1", [u.id]);
     const { password_hash: _p, ...user } = u;
@@ -128,8 +140,9 @@ export async function authRoutes(app: FastifyInstance) {
   app.post("/v1/auth/change-password", { schema: { ...tag, body: jsonSchema(ChangePassword) }, ...app.limit(10, "10 minutes", true) }, async (req, reply) => {
     const me = await currentUser(req, true);
     const b = parse(ChangePassword, req.body);
-    const [cur] = await db.query<{ password_hash: string }>("SELECT password_hash FROM users WHERE id = $1", [me.id]);
-    if (!(await verifyPassword(b.current_password, cur.password_hash))) throw new HttpError(400, "Mật khẩu hiện tại không đúng");
+    const [cur] = await db.query<{ password_hash: string | null }>("SELECT password_hash FROM users WHERE id = $1", [me.id]);
+    // Tài khoản Google chưa có mật khẩu: đặt mật khẩu lần đầu không cần mật khẩu cũ
+    if (cur.password_hash && !(await verifyPassword(b.current_password, cur.password_hash))) throw new HttpError(400, "Mật khẩu hiện tại không đúng");
     const [u] = await db.query<UserRow>(
       `UPDATE users SET password_hash = $2, token_version = token_version + 1 WHERE id = $1 RETURNING ${USER_COLS}`,
       [me.id, await hashPassword(b.new_password)]);
@@ -182,5 +195,78 @@ export async function authRoutes(app: FastifyInstance) {
     });
     if (!u) throw new HttpError(400, "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn");
     return capPhien(reply, u);
+  });
+
+  // ---- Đăng nhập Google ----
+  app.get("/v1/auth/providers", { schema: { ...tag, summary: "Cách đăng nhập đang bật" } }, async () => ({ google: Boolean(app.google) }));
+
+  /** Địa chỉ callback: PUBLIC_API_URL nếu đặt, nếu không thì lấy từ request (cần TRUST_PROXY sau reverse proxy). */
+  const callbackUrl = (req: { protocol: string; host: string }) =>
+    `${(process.env.PUBLIC_API_URL || `${req.protocol}://${req.host}`).replace(/\/$/, "")}/v1/auth/google/callback`;
+  const oauthCookie = {
+    httpOnly: true, sameSite: "lax" as const, path: "/v1/auth/google", maxAge: 600,
+    secure: process.env.COOKIE_SECURE ? process.env.COOKIE_SECURE === "1" : process.env.NODE_ENV === "production",
+  };
+  const veTrangWeb = (reply: FastifyReply, path: string, q: Record<string, string>) =>
+    reply.redirect(`${appUrl()}${path}?${new URLSearchParams(q)}`);
+
+  app.get("/v1/auth/google/start", { schema: { ...tag, summary: "Chuyển sang trang đăng nhập Google" }, ...app.limit(30, "10 minutes") }, async (req, reply) => {
+    if (!app.google) throw new HttpError(404, "Chưa bật đăng nhập Google");
+    const q = parse(z.object({ next: z.string().max(500).optional(), hint: z.string().max(254).optional() }), req.query, "query");
+    const state = randomBytes(24).toString("base64url");
+    reply.setCookie(OAUTH_COOKIE, app.jwt.sign({ st: state, next: safeNext(q.next) }, { expiresIn: "10m" }), oauthCookie);
+    return reply.redirect(app.google.authUrl(state, callbackUrl(req), q.hint));
+  });
+
+  app.get("/v1/auth/google/callback", { schema: { ...tag, summary: "Google gọi lại sau khi đăng nhập" }, ...app.limit(30, "10 minutes") }, async (req, reply) => {
+    const q = req.query as Record<string, string | undefined>;
+    let next = "/la-so-cua-toi";
+    const loi = (msg: string) => veTrangWeb(reply, "/dang-nhap", { loi: msg, next });
+    const raw = req.cookies?.[OAUTH_COOKIE] ?? "";
+    reply.clearCookie(OAUTH_COOKIE, { path: oauthCookie.path });
+    let st: string;
+    try {
+      const c = app.jwt.verify<{ st: string; next: string }>(raw);
+      st = c.st;
+      next = safeNext(c.next);
+    } catch {
+      return loi("Phiên đăng nhập Google đã hết hạn, bạn thử lại nhé");
+    }
+    const a = Buffer.from(st);
+    const b = Buffer.from(String(q.state ?? ""));
+    if (a.length !== b.length || !timingSafeEqual(a, b)) return loi("Yêu cầu đăng nhập không hợp lệ, bạn thử lại nhé");
+    if (q.error || !q.code) return loi(q.error === "access_denied" ? "Bạn đã huỷ đăng nhập Google" : "Google không cho đăng nhập, bạn thử lại nhé");
+    if (!app.google) return loi("Chưa bật đăng nhập Google");
+
+    let p;
+    try {
+      p = await app.google.exchange(q.code, callbackUrl(req));
+    } catch (e) {
+      req.log.warn({ err: e }, "google oauth exchange");
+      return loi(e instanceof GoogleError ? "Không xác thực được với Google, bạn thử lại nhé" : "Lỗi kết nối Google, bạn thử lại nhé");
+    }
+    if (!p.email_verified) return loi("Email Google chưa được xác minh");
+    const prof = p;
+
+    const kq = await db.tx(async (tq) => {
+      const [bySub] = await tq<UserRow>(`SELECT ${USER_COLS} FROM users WHERE google_sub = $1`, [prof.sub]);
+      if (bySub) return { u: bySub, moi: false, xacNhan: false };
+      const [byEmail] = await tq<UserRow>(`SELECT ${USER_COLS} FROM users WHERE lower(email) = lower($1) FOR UPDATE`, [prof.email]);
+      if (byEmail) {
+        const [u] = await tq<UserRow>(
+          `UPDATE users SET google_sub = $2, email_verified_at = coalesce(email_verified_at, now()) WHERE id = $1 RETURNING ${USER_COLS}`,
+          [byEmail.id, prof.sub]);
+        return { u, moi: false, xacNhan: !byEmail.email_verified };
+      }
+      const [u] = await tq<UserRow>(
+        `INSERT INTO users (email, name, password_hash, google_sub, email_verified_at) VALUES ($1, $2, NULL, $3, now())
+         RETURNING ${USER_COLS}`, [prof.email, prof.name.slice(0, 100), prof.sub]);
+      return { u, moi: true, xacNhan: true };
+    });
+    await db.query("UPDATE users SET last_login_at = now() WHERE id = $1", [kq.u.id]);
+    if (kq.moi) track(app, req, reply, "dang_ky", { cach: "google" });
+    if (kq.xacNhan) track(app, req, reply, "xac_nhan_email", { cach: "google" });
+    capPhien(reply, kq.u);
+    return veTrangWeb(reply, "/dang-nhap/google", { next, ...(kq.moi ? { moi: "1" } : {}) });
   });
 }

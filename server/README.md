@@ -12,7 +12,7 @@ JWT, vitest, `@anthropic-ai/sdk` + `openai` (tuỳ chọn).
 cd server
 npm install
 npm run dev          # http://127.0.0.1:8973 — tài liệu API: /docs, giao diện thử: /viewer
-npm test             # 123 test
+npm test             # 136 test
 npm run build && npm start
 ```
 
@@ -64,6 +64,9 @@ Schema database tự migrate khi khởi động (`src/db/migrations.ts`). Lần 
 | `POST /v1/luan-giai/stream` | Như trên nhưng dạng Server-Sent Events: `cach_cuc` → 12 × `cung` (mỗi cung đã qua Guardrail) → `done` |
 | `GET /health` | `{"status":"ok"}` |
 | `POST /v1/auth/register`, `POST /v1/auth/login`, `POST /v1/auth/logout`, `POST /v1/auth/logout-all` | Tài khoản email + mật khẩu. Phiên: cookie httpOnly `tuvi_session` (trình duyệt) hoặc header `Authorization: Bearer <token>` |
+| `GET /v1/auth/providers` | `{google: true/false}` — trang web dùng để hiện nút Google |
+| `GET /v1/auth/google/start?next=/...` → `GET /v1/auth/google/callback` | Đăng nhập Google (OAuth chuyển hướng); xong chuyển về `APP_URL/dang-nhap/google?next=...` với cookie phiên |
+| `GET /v1/me/referral` | Mã giới thiệu của tôi, link `APP_URL/?ref=MÃ`, điều kiện chương trình, số bạn đã mua, lượt đã nhận |
 | `GET/PATCH /v1/auth/me`, `POST /v1/auth/change-password` | Thông tin tài khoản, đổi tên, đổi mật khẩu (các phiên khác bị đăng xuất) |
 | `POST /v1/auth/verify-email`, `POST /v1/auth/resend-verification` | Xác thực email (link 24 giờ) |
 | `POST /v1/auth/forgot`, `POST /v1/auth/reset` | Quên / đặt lại mật khẩu (link dùng một lần, 30 phút) |
@@ -104,6 +107,27 @@ thiếu nhật ký. Các thao tác: `user.role`, `credits.grant`, `plan.create`,
 `order.cancel`, `order.refund`, `payment.resolve`.
 
 Doanh thu trong thống kê là tiền thực thu (đơn đã hoàn chỉ tính phần không hoàn).
+
+## Đăng nhập Google
+
+Luồng OAuth authorization code do backend xử lý: `start` đặt cookie `tuvi_oauth` (state ký JWT, 10 phút) rồi
+chuyển sang Google; `callback` kiểm state, đổi `code` lấy `id_token` (kiểm `aud`, `iss`, `exp`), rồi:
+tìm theo `google_sub` → nếu không có, tìm theo email (gắn Google vào tài khoản cũ và coi email đã xác nhận) →
+nếu không có, tạo tài khoản mới không mật khẩu. Tài khoản Google tự đặt mật khẩu được ở trang tài khoản
+(không cần mật khẩu cũ) hoặc qua "Quên mật khẩu".
+
+Cấu hình: tạo OAuth Client (Web application) ở Google Cloud Console, thêm *Authorized redirect URI*
+`PUBLIC_API_URL/v1/auth/google/callback`, rồi đặt `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `PUBLIC_API_URL`.
+`GOOGLE_OAUTH=fake` giả lập Google cho E2E (cấm ở production).
+
+## Giới thiệu bạn bè
+
+Mỗi người có mã `BANxxxxxx` (sinh khi mở trang tài khoản lần đầu) và link `APP_URL/?ref=MÃ`. Bạn bè nhập mã ở ô mã
+giảm giá (link tự điền) → giảm `percent`% (có thể đặt mức tối đa). Khi đơn đó thanh toán, người giới thiệu được
+cộng `reward_credits` lượt (hạn `reward_valid_days` ngày). Chống lạm dụng: không dùng mã của chính mình; mỗi
+người chỉ một đơn dùng mã giới thiệu; mặc định chỉ khách chưa từng thanh toán; tuỳ chọn giới hạn số lần thưởng
+mỗi người; đơn bị hoàn tiền → thu hồi lượt thưởng chưa dùng. Đơn lưu `referral_code`, `referrer_id`.
+Cấu hình trong bảng `app_settings` (key `referral`), admin sửa ở trang Giới thiệu.
 
 ## Mã giảm giá
 
@@ -171,6 +195,7 @@ kiểu chứng thực **API Key**, khoá = `SEPAY_WEBHOOK_KEY`. Định dạng w
 | `POST /v1/orders {plan_code, coupon_code?}` | Tạo đơn (có thể kèm mã); mã giảm 100% → đơn 0đ thanh toán ngay |
 | `GET /admin/coupons`, `PUT /admin/coupons/:code` | Mã giảm giá: số lần dùng, đang giữ chỗ, doanh thu, tổng tiền giảm; tạo/sửa (ghi nhật ký) |
 | `POST /v1/events {name}` | Sự kiện từ trang web cho phễu (chỉ `xem_goi`, `mo_thanh_toan`, `xem_la_so`) |
+| `GET /admin/referrals`, `PUT /admin/referral-settings` | Giới thiệu bạn bè: cấu hình (ghi nhật ký), tổng quan, bảng xếp hạng người giới thiệu |
 | `GET /admin/funnel?days=30` | Phễu chuyển đổi: lập lá số → bấm AI → thấy bảng gói → tạo đơn → thanh toán; theo ngày; theo gói/mã |
 | `GET /admin/audit` | Nhật ký thao tác admin (lọc `action` theo tiền tố, `admin_id`, `target_type`, `target_id`) |
 | `GET /admin/emails` | Hộp thư đi: người nhận, loại, trạng thái gửi, lỗi (không lưu nội dung) |

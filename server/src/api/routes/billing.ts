@@ -3,9 +3,10 @@ import type { FastifyInstance } from "fastify";
 import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { billingConfigured, findOrderCode, paymentInfo, type Order } from "../../billing/billing.js";
-import { receipt } from "../../email/templates.js";
+import { appUrl, receipt } from "../../email/templates.js";
 import { SU_KIEN_TU_TRANG, track } from "../../analytics/events.js";
-import { CouponError, apDungMa } from "../../billing/coupons.js";
+import { CouponError } from "../../billing/coupons.js";
+import { apDungMaBatKy, caiDatGioiThieu, maGioiThieuCua } from "../../billing/referral.js";
 import type { Plan } from "../../billing/billing.js";
 import { HttpError, currentUser, jsonSchema, parse } from "../http.js";
 
@@ -71,6 +72,23 @@ export async function billingRoutes(app: FastifyInstance) {
     return billing.credits(me.id);
   });
 
+  /** Mã giới thiệu của tôi + điều kiện chương trình + số bạn đã mua qua mã. */
+  app.get("/v1/me/referral", { schema: { ...sec, summary: "Giới thiệu bạn bè" } }, async (req) => {
+    const me = await currentUser(req, true);
+    const q = app.db.query.bind(app.db);
+    const cfg = await caiDatGioiThieu(q);
+    const code = await maGioiThieuCua(q, me.id);
+    const [r] = await q<{ ban_da_mua: number; luot_da_nhan: number }>(
+      `SELECT (SELECT count(DISTINCT user_id)::int FROM orders WHERE referrer_id = $1 AND status = 'paid') AS ban_da_mua,
+              (SELECT coalesce(sum(credits_total - revoked_credits), 0)::int FROM credit_grants WHERE user_id = $1 AND referral_order_id IS NOT NULL) AS luot_da_nhan`,
+      [me.id]);
+    return {
+      code, link: `${appUrl()}/?ref=${code}`,
+      enabled: cfg.enabled, percent: cfg.percent, max_discount: cfg.max_discount, reward_credits: cfg.reward_credits,
+      reward_valid_days: cfg.reward_valid_days, chi_khach_moi: cfg.chi_khach_moi, ...r,
+    };
+  });
+
   app.get("/v1/orders", { schema: sec }, async (req) => {
     const me = await currentUser(req, true);
     return { items: (await billing.ordersOf(me.id)).map(view) };
@@ -104,8 +122,8 @@ export async function billingRoutes(app: FastifyInstance) {
     const [plan] = await app.db.query<Plan>("SELECT * FROM plans WHERE code = $1 AND active", [b.plan_code]);
     if (!plan) throw new HttpError(404, "Gói không tồn tại hoặc đã ngừng bán");
     try {
-      const kq = await apDungMa(app.db.query.bind(app.db), b.code, me.id, plan);
-      return { code: kq.coupon.code, original: kq.original, discount: kq.discount, amount: kq.amount, note: kq.coupon.note };
+      const kq = await apDungMaBatKy(app.db.query.bind(app.db), b.code, me.id, plan);
+      return { code: kq.code, loai: kq.loai, original: kq.original, discount: kq.discount, amount: kq.amount, note: kq.note };
     } catch (e) {
       if (e instanceof CouponError) throw new HttpError(400, e.message);
       throw e;

@@ -7,7 +7,7 @@ import type { FastifyRequest } from "fastify";
 import type { Db } from "../db/index.js";
 import type { AuthUser } from "../api/http.js";
 
-export type AuditTarget = "user" | "order" | "plan" | "kb" | "payment_transaction" | "credits" | "coupon";
+export type AuditTarget = "user" | "order" | "plan" | "kb" | "payment_transaction" | "credits" | "coupon" | "setting";
 
 export interface AuditEntry {
   action: string;

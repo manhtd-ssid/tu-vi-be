@@ -222,4 +222,24 @@ CREATE TABLE events (
 CREATE INDEX events_name_created ON events (name, created_at);
 CREATE INDEX events_created ON events (created_at);
 `,
+  `
+ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
+ALTER TABLE users ADD COLUMN google_sub TEXT;
+CREATE UNIQUE INDEX users_google_sub ON users (google_sub) WHERE google_sub IS NOT NULL;
+ALTER TABLE users ADD COLUMN referral_code TEXT;
+CREATE UNIQUE INDEX users_referral_code ON users (referral_code) WHERE referral_code IS NOT NULL;
+
+CREATE TABLE app_settings (
+  key         TEXT PRIMARY KEY,
+  value       JSONB NOT NULL,
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE orders ADD COLUMN referral_code TEXT;
+ALTER TABLE orders ADD COLUMN referrer_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
+CREATE INDEX orders_referrer ON orders (referrer_id, status) WHERE referrer_id IS NOT NULL;
+
+ALTER TABLE credit_grants ADD COLUMN referral_order_id INTEGER REFERENCES orders(id);
+CREATE UNIQUE INDEX credit_grants_referral_order ON credit_grants (referral_order_id) WHERE referral_order_id IS NOT NULL;
+`,
 ];

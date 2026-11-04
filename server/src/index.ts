@@ -6,6 +6,10 @@ if (process.env.NODE_ENV === "production" && !process.env.DATABASE_URL) {
   console.error("Thiếu DATABASE_URL trong môi trường production (postgres://... hoặc pglite://<thư mục>)");
   process.exit(1);
 }
+if (process.env.NODE_ENV === "production" && process.env.GOOGLE_OAUTH === "fake") {
+  console.error("GOOGLE_OAUTH=fake chỉ dùng cho test, không được bật ở production");
+  process.exit(1);
+}
 if (process.env.NODE_ENV === "production" && process.env.LLM_PROVIDER === "fake") {
   console.error("LLM_PROVIDER=fake chỉ dùng cho test, không được bật ở production");
   process.exit(1);

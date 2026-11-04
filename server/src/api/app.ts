@@ -26,6 +26,7 @@ import { createDb, type Db } from "../db/index.js";
 import { InputError } from "../engine/tuviEngine.js";
 import { hashPassword } from "../lib/password.js";
 import { createMailer, type Mailer } from "../email/mailer.js";
+import { googleFromEnv, type GoogleOAuth } from "../auth/google.js";
 import { HttpError, ValidationError, canCsrfHeader } from "./http.js";
 import { Billing } from "../billing/billing.js";
 import { adminBillingRoutes } from "./routes/adminBilling.js";
@@ -46,6 +47,8 @@ export interface AppOptions {
   /** Bật giới hạn số request (mặc định bật; test tắt để không vướng giới hạn). */
   rateLimit?: boolean;
   mailer?: Mailer;
+  /** Đăng nhập Google (test truyền bản giả lập). Mặc định đọc GOOGLE_CLIENT_ID/SECRET hoặc GOOGLE_OAUTH=fake. */
+  google?: GoogleOAuth | null;
 }
 
 declare module "fastify" {
@@ -54,6 +57,7 @@ declare module "fastify" {
     db: Db;
     billing: Billing;
     mailer: Mailer;
+    google: GoogleOAuth | null;
     /** Cấu hình giới hạn request cho route; trả {} khi tắt giới hạn. */
     limit: (max: number, timeWindow: string, theoNguoiDung?: boolean) => object;
   }
@@ -89,6 +93,7 @@ export async function buildApp(opts: AppOptions = {}): Promise<FastifyInstance> 
   app.decorate("db", db);
   app.decorate("billing", new Billing(db));
   app.decorate("mailer", opts.mailer ?? (await createMailer(db, app.log)));
+  app.decorate("google", opts.google === undefined ? googleFromEnv() : opts.google);
   app.decorate("svc", new ChartService(db, kb, opts.llm ?? ia.generateLlm, app.log));
   if (!opts.db) app.addHook("onClose", async () => db.close());
 
