@@ -34,6 +34,8 @@ import { adminRoutes } from "./routes/admin.js";
 import { billingRoutes } from "./routes/billing.js";
 import { authRoutes } from "./routes/auth.js";
 import { chartRoutes } from "./routes/charts.js";
+import { hoiDapRoutes } from "./routes/hoiDap.js";
+import { shareRoutes } from "./routes/share.js";
 import { coreRoutes } from "./routes/core.js";
 import { ChartService } from "./service.js";
 
@@ -162,6 +164,8 @@ export async function buildApp(opts: AppOptions = {}): Promise<FastifyInstance> 
   await app.register(coreRoutes);
   await app.register(authRoutes);
   await app.register(chartRoutes);
+  await app.register(shareRoutes);
+  await app.register(hoiDapRoutes);
   await app.register(adminRoutes);
   await app.register(billingRoutes);
   await app.register(adminBillingRoutes);

@@ -54,6 +54,13 @@ export async function coreRoutes(app: FastifyInstance) {
 
   app.get("/health", tag(["hệ thống"]), async () => ({ status: "ok" }));
 
+  /** Kho luận giải (14 chính tinh, 12 cung) — trang web dùng để dựng trang nội dung tĩnh cho SEO lúc build. */
+  app.get("/v1/kb/public", tag(["lá số"], undefined, { summary: "Nội dung kho luận giải công khai" }), async (_req, reply) => {
+    const kb = svc.kb.get();
+    reply.header("Cache-Control", "public, max-age=600");
+    return { _nguon: kb._nguon, cung: kb.cung, chinhTinh: kb.chinhTinh };
+  });
+
   app.get("/v1/meta", tag(["lá số"], undefined, { summary: "Danh sách giờ âm và 63 tỉnh" }), async () => ({
     gio: CHI.map((c, i) => ({ gio_sinh: i + 1, chi: c })),
     tinh: pysorted(Object.keys(KINH_DO_TINH)),

@@ -63,6 +63,13 @@ export function chiPhiUsd(u: LlmUsage): number {
  * nhắc tham khảo, nên qua được Guardrail. Không gọi mạng, không tốn tiền. Bị cấm khi NODE_ENV=production.
  */
 export const fakeLlm: LlmFn = async (prompt) => {
+  const hoi = prompt.user.match(/\nCÂU HỎI: (.*)\n/)?.[1];
+  if (hoi) {
+    return {
+      text: `Về câu hỏi “${hoi}”, lá số cho thấy cung Mệnh là điểm tựa chính của bạn [S1]. Đây là câu trả lời mẫu do LLM giả viết cho kiểm thử [S2].\n\n*Nội dung mang tính tham khảo.*`,
+      model: "fake", input_tokens: 200, output_tokens: 60,
+    };
+  }
   const tieuDe = prompt.user.match(/'(## [^']+)'/)?.[1] ?? "## Luận giải";
   const thang = prompt.user.includes("### Từng tháng")
     ? "\n\n### Từng tháng\n" + Array.from({ length: 12 }, (_, i) => `- Tháng ${i + 1}: giữ nhịp đều, theo dõi kế hoạch [S1].`).join("\n")

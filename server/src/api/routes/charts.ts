@@ -8,7 +8,7 @@ import { birthOnly, tomTat } from "../service.js";
 const SaveChart = z.object({ label: z.string().trim().max(120).default(""), input: z.unknown() });
 const IdParam = z.object({ id: z.coerce.number().int().positive() });
 const sec = { tags: ["lá số đã lưu"], security: [{ bearer: [] }] };
-const COLS = "id, label, input, summary, created_at";
+const COLS = "id, label, input, summary, created_at, (share_token IS NOT NULL) AS shared, share_an_ten, share_views";
 
 export async function chartRoutes(app: FastifyInstance) {
   const db = app.db;

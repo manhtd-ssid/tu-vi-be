@@ -107,7 +107,7 @@ export class ChartService {
 
   /** Ghi log luận giải (bản bị Guardrail chặn, chi phí LLM). Lỗi ghi log không làm hỏng request. */
   ghiLog(body: BirthInput, useLlm: boolean, r: Pick<Report, "verdict" | "guardrail_tong" | "per_cung">, userId: number | null,
-    usage: LlmUsage | null = null, loai: "la_so" | "nam" = "la_so"): void {
+    usage: LlmUsage | null = null, loai: "la_so" | "nam" | "hoi_dap" = "la_so"): void {
     const blocked = r.verdict !== "ĐẠT" || r.per_cung.some((x) => x.mode === "offline_sau_khi_llm_truot_guardrail");
     const perCung = r.per_cung.map((x) => ({ cung: x.cung, branch: x.branch, mode: x.mode, guardrail: x.guardrail }));
     const u = usage ?? newUsage();

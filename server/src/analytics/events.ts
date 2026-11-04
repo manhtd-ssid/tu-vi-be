@@ -97,9 +97,13 @@ export async function phieu(app: FastifyInstance, days: number) {
      FROM orders o WHERE o.created_at > ${tu}
      GROUP BY 1, 2 ORDER BY doanh_thu DESC, don_tao DESC`);
 
-  const [phu] = await app.db.query<{ dang_ky: number; xac_nhan_email: number; khach: number }>(
+  const [phu] = await app.db.query<{ dang_ky: number; xac_nhan_email: number; chia_se: number; xem_chia_se: number; cau_hoi_ai: number; khach_hoi_ai: number; khach: number }>(
     `SELECT count(DISTINCT visitor) FILTER (WHERE name = 'dang_ky')::int AS dang_ky,
             count(DISTINCT visitor) FILTER (WHERE name = 'xac_nhan_email')::int AS xac_nhan_email,
+            count(*) FILTER (WHERE name = 'chia_se')::int AS chia_se,
+            count(DISTINCT visitor) FILTER (WHERE name = 'xem_chia_se')::int AS xem_chia_se,
+            count(*) FILTER (WHERE name = 'hoi_dap')::int AS cau_hoi_ai,
+            count(DISTINCT visitor) FILTER (WHERE name = 'hoi_dap')::int AS khach_hoi_ai,
             count(DISTINCT visitor)::int AS khach
      FROM events WHERE created_at > ${tu}`);
   return {

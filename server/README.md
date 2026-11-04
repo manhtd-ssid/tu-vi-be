@@ -12,7 +12,7 @@ JWT, vitest, `@anthropic-ai/sdk` + `openai` (tuỳ chọn).
 cd server
 npm install
 npm run dev          # http://127.0.0.1:8973 — tài liệu API: /docs, giao diện thử: /viewer
-npm test             # 136 test
+npm test             # 149 test
 npm run build && npm start
 ```
 
@@ -129,6 +129,24 @@ người chỉ một đơn dùng mã giới thiệu; mặc định chỉ khách 
 mỗi người; đơn bị hoàn tiền → thu hồi lượt thưởng chưa dùng. Đơn lưu `referral_code`, `referrer_id`.
 Cấu hình trong bảng `app_settings` (key `referral`), admin sửa ở trang Giới thiệu.
 
+## Chia sẻ lá số
+
+Chủ lá số đã lưu bật chia sẻ → mã ngẫu nhiên `share_token` (tắt là xoá, link cũ hết hiệu lực; tuỳ chọn ẩn tên).
+Link gửi đi là `PUBLIC_API_URL/s/<token>`: trang HTML nhỏ có thẻ Open Graph + ảnh xem trước (bàn 12 cung vẽ bằng
+resvg, font Be Vietnam Pro trong `assets/fonts`, giấy phép OFL) để Facebook/Zalo hiện thẻ đẹp, rồi chuyển người
+xem sang `APP_URL/chia-se?t=<token>&ref=<mã giới thiệu của chủ>` — bạn bè mua qua link này thì chủ được thưởng.
+Người xem chỉ thấy phần lá số miễn phí; muốn luận giải AI thì tự đăng nhập, dùng lượt của mình.
+Sự kiện phễu: `chia_se`, `xem_chia_se`.
+
+## Hỏi đáp AI theo lá số
+
+Khách hỏi tự do; AI chỉ trả lời dựa trên 12 cung (chính tinh + kho luận giải) và vận năm đang xem, có chú dẫn
+`[Sx]`, qua Guardrail (C1, C2, C4, C5, C6). Không stream từng token vì nội dung chưa kiểm thì không hiển thị.
+1 lượt đổi được `HOI_DAP_CAU_MOI_LUOT` câu (mặc định 5) cho một lá số. Câu được giữ chỗ trong transaction trước
+khi gọi AI; AI lỗi hoặc trượt Guardrail → trả lại câu. Câu hỏi về sinh tử, y tế, pháp lý, cổ phiếu/tiền số/lô đề
+bị từ chối trước khi gọi AI, không tính câu. Tối đa `HOI_DAP_MAX_NGAY` câu mỗi người mỗi 24 giờ (mặc định 30).
+Chi phí ghi vào `luan_giai_logs` với `loai = 'hoi_dap'`.
+
 ## Mã giảm giá
 
 Giảm theo % (có thể đặt mức giảm tối đa) hoặc số tiền; điều kiện: thời gian hiệu lực, gói áp dụng, giá tối thiểu,
@@ -195,6 +213,12 @@ kiểu chứng thực **API Key**, khoá = `SEPAY_WEBHOOK_KEY`. Định dạng w
 | `POST /v1/orders {plan_code, coupon_code?}` | Tạo đơn (có thể kèm mã); mã giảm 100% → đơn 0đ thanh toán ngay |
 | `GET /admin/coupons`, `PUT /admin/coupons/:code` | Mã giảm giá: số lần dùng, đang giữ chỗ, doanh thu, tổng tiền giảm; tạo/sửa (ghi nhật ký) |
 | `POST /v1/events {name}` | Sự kiện từ trang web cho phễu (chỉ `xem_goi`, `mo_thanh_toan`, `xem_la_so`) |
+| `POST/DELETE /v1/la-so-da-luu/:id/chia-se {an_ten}` | Bật/tắt chia sẻ lá số đã lưu (tắt → link cũ hết hiệu lực); trả `url` (có ảnh xem trước) và `web_url` (kèm mã giới thiệu) |
+| `GET /v1/chia-se/:token` | Lá số được chia sẻ (công khai): ngày giờ sinh, tóm tắt, nhãn (nếu không ẩn), mã giới thiệu của chủ |
+| `GET /s/:token`, `GET /s/:token/og.png` | Trang HTML có thẻ Open Graph cho Facebook/Zalo rồi chuyển sang trang web; ảnh xem trước 1200×630 |
+| `GET /v1/kb/public` | Kho luận giải (14 chính tinh, 12 cung) — trang web dựng trang SEO lúc build |
+| `POST /v1/hoi-dap {…ngày sinh, question, nam_xem?}` | Hỏi AI một câu về lá số (cần đăng nhập; 1 lượt = 5 câu cho một lá số) |
+| `POST /v1/hoi-dap/lich-su {…ngày sinh}` | Lịch sử hỏi đáp + số câu còn lại của lá số |
 | `GET /admin/referrals`, `PUT /admin/referral-settings` | Giới thiệu bạn bè: cấu hình (ghi nhật ký), tổng quan, bảng xếp hạng người giới thiệu |
 | `GET /admin/funnel?days=30` | Phễu chuyển đổi: lập lá số → bấm AI → thấy bảng gói → tạo đơn → thanh toán; theo ngày; theo gói/mã |
 | `GET /admin/audit` | Nhật ký thao tác admin (lọc `action` theo tiền tố, `admin_id`, `target_type`, `target_id`) |

@@ -39,6 +39,11 @@ function kiemTra(b: BirthLike, ctx: z.RefinementCtx) {
 export const BirthInput = z.object(birthFields).superRefine(kiemTra);
 export const YearInput = z.object({ ...birthFields, nam_xem: int(1800, 2300) }).superRefine(kiemTra);
 export const ReportInput = z.object({ ...birthFields, use_llm: z.boolean().default(false) }).superRefine(kiemTra);
+export const HoiDapInput = z.object({
+  ...birthFields,
+  question: z.string().trim().min(3, "Câu hỏi quá ngắn").max(500, "Câu hỏi tối đa 500 ký tự"),
+  nam_xem: int(1800, 2300).optional(),
+}).superRefine(kiemTra);
 export const YearReportInput = z.object({ ...birthFields, nam_xem: int(1800, 2300), use_llm: z.boolean().default(false) }).superRefine(kiemTra);
 export const InterpretInput = z.object({ ...birthFields, cung: z.string() }).superRefine(kiemTra);
 

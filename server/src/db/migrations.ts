@@ -242,4 +242,35 @@ CREATE INDEX orders_referrer ON orders (referrer_id, status) WHERE referrer_id I
 ALTER TABLE credit_grants ADD COLUMN referral_order_id INTEGER REFERENCES orders(id);
 CREATE UNIQUE INDEX credit_grants_referral_order ON credit_grants (referral_order_id) WHERE referral_order_id IS NOT NULL;
 `,
+  `
+ALTER TABLE saved_charts ADD COLUMN share_token TEXT;
+ALTER TABLE saved_charts ADD COLUMN share_an_ten BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE saved_charts ADD COLUMN shared_at TIMESTAMPTZ;
+ALTER TABLE saved_charts ADD COLUMN share_views INTEGER NOT NULL DEFAULT 0;
+CREATE UNIQUE INDEX saved_charts_share_token ON saved_charts (share_token) WHERE share_token IS NOT NULL;
+
+CREATE TABLE hoi_dap_threads (
+  id              SERIAL PRIMARY KEY,
+  user_id         INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  chart_key       TEXT NOT NULL,
+  input           JSONB NOT NULL,
+  questions_left  INTEGER NOT NULL DEFAULT 0 CHECK (questions_left >= 0),
+  questions_total INTEGER NOT NULL DEFAULT 0,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (user_id, chart_key)
+);
+
+CREATE TABLE hoi_dap_messages (
+  id          SERIAL PRIMARY KEY,
+  thread_id   INTEGER NOT NULL REFERENCES hoi_dap_threads(id) ON DELETE CASCADE,
+  question    TEXT NOT NULL,
+  answer      TEXT NOT NULL,
+  mode        TEXT NOT NULL CHECK (mode IN ('llm', 'tu_choi', 'loi')),
+  counted     BOOLEAN NOT NULL DEFAULT false,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX hoi_dap_messages_thread ON hoi_dap_messages (thread_id, id);
+CREATE INDEX hoi_dap_messages_created ON hoi_dap_messages (created_at);
+`,
 ];

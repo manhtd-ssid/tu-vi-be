@@ -13,6 +13,7 @@ WORKDIR /app
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY data ./data
+COPY assets ./assets
 COPY package.json ./
 USER node
 EXPOSE 8973
