@@ -58,7 +58,26 @@ export function chiPhiUsd(u: LlmUsage): number {
 }
 
 /** Ưu tiên Claude (ANTHROPIC_API_KEY) → OpenAI (OPENAI_API_KEY) → null (chạy offline). */
+/**
+ * LLM giả cho test end-to-end (LLM_PROVIDER=fake): trả văn bản đúng khuôn yêu cầu, có trích dẫn [S1] và câu
+ * nhắc tham khảo, nên qua được Guardrail. Không gọi mạng, không tốn tiền. Bị cấm khi NODE_ENV=production.
+ */
+export const fakeLlm: LlmFn = async (prompt) => {
+  const tieuDe = prompt.user.match(/'(## [^']+)'/)?.[1] ?? "## Luận giải";
+  const thang = prompt.user.includes("### Từng tháng")
+    ? "\n\n### Từng tháng\n" + Array.from({ length: 12 }, (_, i) => `- Tháng ${i + 1}: giữ nhịp đều, theo dõi kế hoạch [S1].`).join("\n")
+    : "";
+  return {
+    text: `${tieuDe}\nĐoạn luận giải mẫu do LLM giả viết cho kiểm thử [S1].${thang}\n\n*Nội dung mang tính tham khảo.*`,
+    model: "fake", input_tokens: 100, output_tokens: 50,
+  };
+};
+
 export const generateLlm: LlmFn = async (prompt) => {
+  if (process.env.LLM_PROVIDER === "fake") {
+    if (process.env.NODE_ENV === "production") throw new Error("LLM_PROVIDER=fake không được dùng ở production");
+    return fakeLlm(prompt);
+  }
   const keyA = process.env.ANTHROPIC_API_KEY;
   if (keyA) {
     try {

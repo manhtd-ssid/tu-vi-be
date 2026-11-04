@@ -98,3 +98,20 @@ describe("POST /v1/luan-giai/nam", () => {
     expect(log).toMatchObject({ loai: "nam", llm_calls: 1 });
   });
 });
+
+describe("LLM giả (LLM_PROVIDER=fake, chỉ cho test end-to-end)", () => {
+  it("viết đúng khuôn nên qua Guardrail cả lá số lẫn vận năm; bị cấm ở production", async () => {
+    const { generateLlm } = await import("../src/agents/interpretation.js");
+    const { luanCung } = await import("../src/agents/orchestrator.js");
+    process.env.LLM_PROVIDER = "fake";
+    try {
+      expect((await luanCung(chart.palaces[0], kb, [], true, generateLlm)).mode).toBe("llm");
+      expect((await luanVanNam(chart, 2026, kb, true, generateLlm)).mode).toBe("llm");
+      process.env.NODE_ENV = "production";
+      await expect(generateLlm({ system: "", user: "" })).rejects.toThrow(/production/);
+    } finally {
+      delete process.env.LLM_PROVIDER;
+      process.env.NODE_ENV = "test";
+    }
+  });
+});
