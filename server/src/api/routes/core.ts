@@ -14,7 +14,8 @@ import { InputError } from "../../engine/tuviEngine.js";
 import * as vanHan from "../../engine/vanHan.js";
 import { pysorted } from "../../lib/py.js";
 import { HttpError, currentUser, jsonSchema, parse } from "../http.js";
-import { BirthInput, InterpretInput, ReportInput, YearInput } from "../schemas.js";
+import { BirthInput, InterpretInput, ReportInput, YearInput, YearReportInput } from "../schemas.js";
+import { luanVanNam, type VanNam } from "../../agents/vanNam.js";
 import { birthOnly, chartKey } from "../service.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -173,6 +174,63 @@ export async function coreRoutes(app: FastifyInstance) {
     } finally {
       raw.end();
     }
+  });
+
+  /**
+   * Luận giải VẬN NĂM (tổng quan năm + 12 tháng âm lịch).
+   * use_llm=false: bản tổng hợp từ nguồn, miễn phí. use_llm=true: bản AI, cùng quy tắc với luận giải lá số —
+   * X-API-Key nội bộ không tính lượt; người dùng cần đăng nhập, mỗi cặp (lá số, năm) tốn 1 lượt, đọc lại
+   * không tốn; AI trượt Guardrail thì trả bản tổng hợp và không trừ lượt.
+   */
+  app.post("/v1/luan-giai/nam", { ...app.limit(60, "1 hour", true), ...tag(["luận giải"], YearReportInput, {
+    summary: "Luận giải vận năm + 12 tháng", security: [{ apiKey: [] }, { bearer: [] }, { cookie: [] }, {}],
+  }) }, async (req) => {
+    const body = parse(YearReportInput, req.body);
+    const chart = svc.tinhLaSo(body);
+    const user = await currentUser(req, false).catch(() => null);
+    const kb = svc.kb.get();
+    const logNam = (r: VanNam, userId: number | null, usage: ia.LlmUsage | null) => svc.ghiLog(body, body.use_llm, {
+      verdict: r.guardrail.passed === r.guardrail.total ? "ĐẠT" : "CÓ CẢNH BÁO",
+      guardrail_tong: `${r.guardrail.passed}/${r.guardrail.total}`,
+      per_cung: [{ cung: `Vận năm ${r.nam}`, branch: r.can_chi, mode: r.mode, guardrail: r.guardrail, chinh_tinh: [], chunks: [] }],
+    }, userId, usage, "nam");
+
+    if (!body.use_llm) {
+      const r = await luanVanNam(chart, body.nam_xem, kb, false);
+      logNam(r, user?.id ?? null, null);
+      return r;
+    }
+    const q = await quyenLlm(req);
+    if (q.noiBo) {
+      await svc.kiemTraNganSach();
+      const usage = newUsage();
+      const r = await luanVanNam(chart, body.nam_xem, kb, true, svc.llm, usage);
+      logNam(r, user?.id ?? null, usage);
+      return r;
+    }
+    const key = `${chartKey(body)}|nam:${body.nam_xem}`;
+    const saved = await app.billing.unlocked(q.userId, key);
+    if (saved) {
+      const { credits_left } = await app.billing.credits(q.userId);
+      return { ...(saved.report as VanNam), billing: { charged: false, da_mo_khoa: true, credits_left } };
+    }
+    if ((await app.billing.credits(q.userId)).credits_left <= 0) {
+      throw new HttpError(402, "Bạn đã dùng hết lượt luận giải chuyên sâu. Mua thêm gói để mở khoá luận giải năm này.");
+    }
+    await svc.kiemTraNganSach();
+    const usage = newUsage();
+    const r = await luanVanNam(chart, body.nam_xem, kb, true, svc.llm, usage);
+    logNam(r, q.userId, usage);
+    let charged = false;
+    if (r.mode === "llm") charged = (await app.billing.unlock(q.userId, key, { ...birthOnly(body), nam_xem: body.nam_xem }, r, [])) === "ok";
+    const { credits_left } = await app.billing.credits(q.userId);
+    return {
+      ...r,
+      billing: {
+        charged, da_mo_khoa: charged, credits_left,
+        ...(r.mode !== "llm" ? { ly_do: "AI chưa viết được bản đạt kiểm duyệt nên không trừ lượt; đây là bản tổng hợp từ nguồn." } : {}),
+      },
+    };
   });
 
   // ---- Tương thích laso_viewer.html ----

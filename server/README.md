@@ -12,7 +12,7 @@ JWT, vitest, `@anthropic-ai/sdk` + `openai` (tuỳ chọn).
 cd server
 npm install
 npm run dev          # http://127.0.0.1:8973 — tài liệu API: /docs, giao diện thử: /viewer
-npm test             # 93 test
+npm test             # 98 test
 npm run build && npm start
 ```
 
@@ -47,7 +47,7 @@ Schema database tự migrate khi khởi động (`src/db/migrations.ts`). Lần 
 | `src/engine/vanHan.ts` | `van_han.py` | Đại hạn, tiểu hạn, lưu niên, lưu nguyệt |
 | `src/engine/cachCuc.ts` | `cach_cuc.py` | 41 quy tắc cách cục (24 nhóm) |
 | `src/engine/thoiGian.ts` | `thoi_gian.py` | Giờ đồng hồ → giờ âm, Chân Thái Dương, Tý muộn, kinh độ 63 tỉnh |
-| `src/agents/` | `agents/*.py` | RAG trên `data/kb.json`, gọi LLM, Guardrail 6 kiểm tra, ghép báo cáo 12 cung |
+| `src/agents/` | `agents/*.py` | RAG trên kho luận giải, gọi LLM, Guardrail 6 kiểm tra, ghép báo cáo 12 cung; `vanNam.ts` (mới): luận giải vận năm |
 | `src/api/` | `service/api.py` | Fastify: route, schema zod, cache LRU, OpenAPI |
 | `src/db/` | (mới) | Kết nối PostgreSQL/PGlite, migration |
 | `scripts/crossval.ts` + `oracle.py` | (mới) | Đối chiếu toàn bộ output Node ⇄ Python |
@@ -60,6 +60,7 @@ Schema database tự migrate khi khởi động (`src/db/migrations.ts`). Lần 
 | `POST /v1/luu-nien` | Thêm `nam_xem`: vận năm + 12 tháng |
 | `POST /v1/luan-giai` | Báo cáo 12 cung; `use_llm: true` cần header `X-API-Key` nếu đặt `API_KEY` |
 | `GET /v1/meta` | Danh sách giờ, tỉnh |
+| `POST /v1/luan-giai/nam` | Luận giải vận năm `nam_xem`: tổng quan (đại hạn, tiểu hạn, Thái Tuế, Tứ Hóa lưu niên) + 12 tháng. Bản tổng hợp miễn phí; `use_llm: true` là bản AI, 1 lượt cho mỗi (lá số, năm) |
 | `POST /v1/luan-giai/stream` | Như trên nhưng dạng Server-Sent Events: `cach_cuc` → 12 × `cung` (mỗi cung đã qua Guardrail) → `done` |
 | `GET /health` | `{"status":"ok"}` |
 | `POST /v1/auth/register`, `POST /v1/auth/login`, `POST /v1/auth/logout`, `POST /v1/auth/logout-all` | Tài khoản email + mật khẩu. Phiên: cookie httpOnly `tuvi_session` (trình duyệt) hoặc header `Authorization: Bearer <token>` |
