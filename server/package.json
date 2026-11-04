@@ -2,7 +2,7 @@
   "name": "tu-vi-be-server",
   "version": "1.0.0",
   "private": true,
-  "description": "Backend Tử Vi (Node/TypeScript) — port từ engine Python lasotuvi",
+  "description": "Backend Tử Vi (Node/TypeScript)",
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -12,8 +12,7 @@
     "start": "node dist/index.js",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "crossval": "tsx scripts/crossval.ts"
+    "test": "vitest run"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.4.0",

@@ -31,9 +31,6 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: server/package-lock.json
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
       - run: npm ci
       - run: npm run typecheck
       - name: Test (PGlite)
@@ -42,8 +39,6 @@ jobs:
         run: npx vitest run test/account.test.ts test/billing.test.ts test/session.test.ts test/vanNam.test.ts test/adminAudit.test.ts --no-file-parallelism
         env:
           TEST_DATABASE_URL: postgres://tuvi:tuvi@localhost:5432/tuvi
-      - name: Đối chiếu engine Node ⇄ Python (phải khớp 100%)
-        run: npm run crossval -- --n 2000 --seed ${{ github.run_number }}
       - run: npm run build
 
   docker:

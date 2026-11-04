@@ -1,7 +1,7 @@
 # tu-vi-be/server — Backend Tử Vi (Node.js + TypeScript)
 
-Bản Node của backend Tử Vi, port 1-1 từ engine Python (`src/`, `agents/`). Hợp đồng
-HTTP giữ nguyên, frontend không phải sửa gì.
+Backend Tử Vi, port 1-1 từ engine Python (lasotuvi + các module tu-vi-be bản Python, đã gỡ khỏi repo;
+xem lịch sử git). Hợp đồng HTTP của bản Python được giữ nguyên.
 
 Công nghệ: Node ≥ 20, TypeScript, Fastify 5, zod 4, PostgreSQL (`pg`, PGlite cho dev/test),
 JWT, vitest, `@anthropic-ai/sdk` + `openai` (tuỳ chọn).
@@ -50,7 +50,7 @@ Schema database tự migrate khi khởi động (`src/db/migrations.ts`). Lần 
 | `src/agents/` | `agents/*.py` | RAG trên kho luận giải, gọi LLM, Guardrail 6 kiểm tra, ghép báo cáo 12 cung; `vanNam.ts` (mới): luận giải vận năm |
 | `src/api/` | `service/api.py` | Fastify: route, schema zod, cache LRU, OpenAPI |
 | `src/db/` | (mới) | Kết nối PostgreSQL/PGlite, migration |
-| `scripts/crossval.ts` + `oracle.py` | (mới) | Đối chiếu toàn bộ output Node ⇄ Python |
+| `test/pythonGolden.test.ts` + `test/fixtures/python-golden.json.gz` | (mới) | Hồi quy: kết quả bản Python gốc trên 1.000 ca, bản Node phải khớp 100% |
 
 ## API
 
@@ -158,16 +158,19 @@ kiểu chứng thực **API Key**, khoá = `SEPAY_WEBHOOK_KEY`. Định dạng w
 - `npm test`: engine, API, tài khoản/admin (PGlite trong bộ nhớ).
 - `TEST_DATABASE_URL=postgres://... npx vitest run test/account.test.ts`: chạy phần database trên PostgreSQL
   thật (schema `public` của database đó bị **xoá sạch**, dùng database riêng cho test).
-- CI (`.github/workflows/server.yml`): typecheck, test, test trên Postgres, crossval 2000 ca, build;
+- CI (`.github/workflows/server.yml`): typecheck, test (gồm hồi quy so với bản Python gốc), test trên Postgres, build;
   push lên `dev`/`master` thì build và đẩy image lên `ghcr.io/<owner>/tu-vi-be`.
 
 ## Độ tin cậy của bản port
 
-`npm run crossval -- --n 3000 --seed 42` chạy cùng bộ ca ngẫu nhiên qua cả hai engine
-(năm 1850–2150, âm/dương lịch, tháng nhuận, cả hai `nhuan_policy`, quy đổi giờ có/không
-kinh độ) và so **toàn bộ** JSON: mọi sao, đặc tính, Tứ Hóa, Tuần/Triệt, đại/tiểu hạn,
-cách cục, lưu niên/lưu nguyệt, báo cáo luận giải offline. Kết quả hiện tại: 3.750/3.750 ca
-khớp (thêm 2.500/2.500 với seed 7). Cần `python3` để chạy (chỉ thư viện chuẩn).
+Khi còn bản Python, `crossval` chạy cùng bộ ca ngẫu nhiên qua cả hai engine (năm 1850–2150, âm/dương lịch,
+tháng nhuận, cả hai `nhuan_policy`, quy đổi giờ có/không kinh độ) và so **toàn bộ** JSON: mọi sao, đặc tính,
+Tứ Hóa, Tuần/Triệt, đại/tiểu hạn, cách cục, lưu niên/lưu nguyệt, báo cáo luận giải offline — nhiều lần, mỗi lần
+hàng nghìn ca, khớp 100%. Trước khi gỡ bản Python, 1.000 ca (seed 2026) cùng kết quả Python được lưu ở
+`test/fixtures/python-golden.json.gz`; `test/pythonGolden.test.ts` chạy lại toàn bộ trong mỗi lần `npm test`.
+
+Cố ý đổi kết quả engine (sửa quy tắc an sao…) thì test này đỏ: xác nhận thay đổi đúng ý, rồi sinh lại fixture
+có chủ đích và ghi lý do trong commit.
 
 Ghi chú khi port: các chỗ Python và JS khác ngữ nghĩa (`%` với số âm, `int()` cắt về 0,
 `round` kiểu banker, `str.title()`, `sorted` theo code point, `repr` list) được mô phỏng
