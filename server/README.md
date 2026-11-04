@@ -12,7 +12,7 @@ JWT, vitest, `@anthropic-ai/sdk` + `openai` (tuỳ chọn).
 cd server
 npm install
 npm run dev          # http://127.0.0.1:8973 — tài liệu API: /docs, giao diện thử: /viewer
-npm test             # 103 test
+npm test             # 123 test
 npm run build && npm start
 ```
 
@@ -105,6 +105,23 @@ thiếu nhật ký. Các thao tác: `user.role`, `credits.grant`, `plan.create`,
 
 Doanh thu trong thống kê là tiền thực thu (đơn đã hoàn chỉ tính phần không hoàn).
 
+## Mã giảm giá
+
+Giảm theo % (có thể đặt mức giảm tối đa) hoặc số tiền; điều kiện: thời gian hiệu lực, gói áp dụng, giá tối thiểu,
+tổng số lượt, số lượt mỗi người. Một lượt = một đơn đang giữ chỗ (đã thanh toán, hoặc đang chờ và còn hạn); đơn
+hết hạn/huỷ trả lại chỗ; đơn đã hoàn tiền không tính. Kiểm tra lượt chạy trong transaction có khoá dòng mã nên
+tạo đơn đồng thời không vượt giới hạn. Đơn lưu `original_amount`, `discount_amount`, `coupon_code`.
+Link khuyến mãi: `/thanh-toan?goi=GOI_5&ma=TET2027`.
+
+## Phễu chuyển đổi
+
+Backend tự ghi sự kiện (bảng `events`): `lap_la_so`, `luan_giai`, `ai_bam`, `ai_het_luot`, `ai_mo_khoa` (kèm `loai`:
+lá số / năm), `dang_ky`, `xac_nhan_email`, `don_tao` (gói, mã, số tiền, id đơn); trang web gửi thêm `xem_goi`,
+`mo_thanh_toan`. Mỗi trình duyệt có mã ẩn danh ngẫu nhiên trong cookie httpOnly `tuvi_vid` (1 năm) để nối các bước
+kể cả trước khi đăng nhập. **Không ghi ngày giờ sinh, tên, email vào sự kiện.** Bước "thanh toán" tính từ trạng
+thái hiện tại của đơn mà khách đã tạo (webhook đến từ SePay nên không biết khách là ai). Mỗi bước đếm khách đã đi
+tới **ít nhất** bước đó, nên phễu không bao giờ tăng ở bước sau. `ANALYTICS=0` để tắt.
+
 ## Chi phí LLM
 
 Mỗi lần luận giải ghi số lần gọi, token vào/ra, model và chi phí ước tính (USD) vào `luan_giai_logs`
@@ -150,6 +167,11 @@ kiểu chứng thực **API Key**, khoá = `SEPAY_WEBHOOK_KEY`. Định dạng w
 | `GET/POST /admin/users/:id/credits` | Xem / cộng lượt thủ công (ghi lý do) |
 | `POST /admin/orders/:id/refund {amount, note}` | Ghi nhận hoàn tiền đơn đã trả (chuyển tiền làm ngoài hệ thống): thu hồi lượt chưa dùng, giữ lá số đã mở khoá, gửi email báo khách |
 | `POST /admin/payment-transactions/:id/resolve {note}` | Đánh dấu giao dịch không khớp đã xử lý (rời danh sách cần xem) |
+| `POST /v1/coupons/check {plan_code, code}` | Kiểm tra mã giảm giá, trả giá sau giảm |
+| `POST /v1/orders {plan_code, coupon_code?}` | Tạo đơn (có thể kèm mã); mã giảm 100% → đơn 0đ thanh toán ngay |
+| `GET /admin/coupons`, `PUT /admin/coupons/:code` | Mã giảm giá: số lần dùng, đang giữ chỗ, doanh thu, tổng tiền giảm; tạo/sửa (ghi nhật ký) |
+| `POST /v1/events {name}` | Sự kiện từ trang web cho phễu (chỉ `xem_goi`, `mo_thanh_toan`, `xem_la_so`) |
+| `GET /admin/funnel?days=30` | Phễu chuyển đổi: lập lá số → bấm AI → thấy bảng gói → tạo đơn → thanh toán; theo ngày; theo gói/mã |
 | `GET /admin/audit` | Nhật ký thao tác admin (lọc `action` theo tiền tố, `admin_id`, `target_type`, `target_id`) |
 | `GET /admin/emails` | Hộp thư đi: người nhận, loại, trạng thái gửi, lỗi (không lưu nội dung) |
 

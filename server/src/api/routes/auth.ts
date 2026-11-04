@@ -10,6 +10,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { z } from "zod";
 import { resetPassword, verifyEmail } from "../../email/templates.js";
 import { hashPassword, verifyPassword } from "../../lib/password.js";
+import { track } from "../../analytics/events.js";
 import { HttpError, SESSION_COOKIE, currentUser, jsonSchema, parse } from "../http.js";
 
 const MatKhau = z.string().min(8, "Mật khẩu tối thiểu 8 ký tự").max(200);
@@ -84,6 +85,7 @@ export async function authRoutes(app: FastifyInstance) {
     if (!rows.length) throw new HttpError(409, "Email đã được đăng ký");
     const u = rows[0];
     await app.mailer.send(verifyEmail(u.email, await taoToken(u.id, "verify")));
+    track(app, req, reply, "dang_ky");
     return reply.status(201).send(capPhien(reply, u));
   });
 
@@ -135,11 +137,12 @@ export async function authRoutes(app: FastifyInstance) {
   });
 
   // ---- Xác thực email ----
-  app.post("/v1/auth/verify-email", { schema: { ...tag, body: jsonSchema(Token) }, ...app.limit(20, "10 minutes") }, async (req) => {
+  app.post("/v1/auth/verify-email", { schema: { ...tag, body: jsonSchema(Token) }, ...app.limit(20, "10 minutes") }, async (req, reply) => {
     const { token } = parse(Token, req.body);
     const userId = await dungToken(token, "verify");
     if (!userId) throw new HttpError(400, "Liên kết xác nhận không hợp lệ hoặc đã hết hạn");
     await db.query("UPDATE users SET email_verified_at = coalesce(email_verified_at, now()) WHERE id = $1", [userId]);
+    track(app, req, reply, "xac_nhan_email");
     return { ok: true };
   });
 

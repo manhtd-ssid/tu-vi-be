@@ -9,6 +9,8 @@ import type { Order } from "../../billing/billing.js";
 import { refundNotice } from "../../email/templates.js";
 import { HttpError, Paging, parse, requireAdmin } from "../http.js";
 import { guiBienNhan } from "./billing.js";
+import { phieu } from "../../analytics/events.js";
+import { DON_GIU_CHO, chuanHoaMa } from "../../billing/coupons.js";
 
 const sec = { tags: ["admin"], security: [{ bearer: [] }] };
 const IdParam = z.object({ id: z.coerce.number().int().positive() });
@@ -21,6 +23,24 @@ const PlanBody = z.object({
   active: z.boolean(),
   sort: z.number().int().default(0),
 });
+const CouponBody = z.object({
+  kind: z.enum(["percent", "amount"]),
+  value: z.number().int().min(1),
+  max_discount: z.number().int().min(1).nullable().default(null),
+  min_amount: z.number().int().min(0).default(0),
+  plan_codes: z.array(z.string().regex(/^[A-Z0-9_]{2,40}$/)).nullable().default(null),
+  starts_at: z.iso.datetime({ offset: true }).nullable().default(null),
+  ends_at: z.iso.datetime({ offset: true }).nullable().default(null),
+  max_uses: z.number().int().min(1).nullable().default(null),
+  max_uses_per_user: z.number().int().min(1).default(1),
+  active: z.boolean().default(true),
+  note: z.string().trim().max(300).default(""),
+}).superRefine((b, ctx) => {
+  if (b.kind === "percent" && b.value > 100) ctx.addIssue({ code: "custom", path: ["value"], message: "Giảm theo % tối đa 100" });
+  if (b.starts_at && b.ends_at && b.starts_at >= b.ends_at) ctx.addIssue({ code: "custom", path: ["ends_at"], message: "Ngày kết thúc phải sau ngày bắt đầu" });
+});
+const COUPON_COLS = "code, kind, value, max_discount, min_amount, plan_codes, starts_at, ends_at, max_uses, max_uses_per_user, active, note, created_at, updated_at";
+
 const PLAN_COLS = "code, name, description, price, credits, valid_days, active, sort";
 /** Giao dịch cần admin xem: không khớp đơn và chưa được đánh dấu đã xử lý. */
 const CAN_XEM = "t.match_status NOT IN ('khop', 'tien_ra') AND t.resolved_at IS NULL";
@@ -226,5 +246,51 @@ export async function adminBillingRoutes(app: FastifyInstance) {
       return grant;
     });
     return reply.status(201).send(g);
+  });
+
+  // ---- Mã giảm giá ----
+  app.get("/admin/coupons", { schema: sec }, async () => {
+    const items = await db.query(
+      `SELECT ${COUPON_COLS.split(", ").map((c) => "c." + c).join(", ")},
+              count(o.id) FILTER (WHERE o.status IN ('paid', 'refunded'))::int AS so_lan_dung,
+              count(o.id) FILTER (WHERE ${DON_GIU_CHO})::int AS dang_giu_cho,
+              coalesce(sum(CASE WHEN o.status = 'paid' THEN o.amount WHEN o.status = 'refunded' THEN o.amount - coalesce(o.refund_amount, 0) END), 0)::bigint AS doanh_thu,
+              coalesce(sum(o.discount_amount) FILTER (WHERE o.status IN ('paid', 'refunded')), 0)::bigint AS tong_giam
+       FROM coupons c LEFT JOIN orders o ON o.coupon_code = c.code
+       GROUP BY c.code ORDER BY c.created_at DESC`);
+    return { items: items.map((x) => ({ ...x, doanh_thu: Number(x.doanh_thu), tong_giam: Number(x.tong_giam) })) };
+  });
+
+  /** Tạo hoặc sửa mã. Mã đã có người dùng vẫn sửa được; đơn đã tạo giữ nguyên số tiền lúc tạo. */
+  app.put("/admin/coupons/:code", { schema: sec }, async (req) => {
+    const me = await requireAdmin(req);
+    const { code: raw } = parse(z.object({ code: z.string().min(1).max(40) }), req.params, "path");
+    const code = chuanHoaMa(decodeURIComponent(raw));
+    if (!/^[A-Z0-9_-]{3,30}$/.test(code)) throw new HttpError(422, "Mã chỉ gồm A-Z, 0-9, dấu - hoặc _, dài 3–30 ký tự");
+    const b = parse(CouponBody, req.body);
+    if (b.plan_codes?.length) {
+      const co = await db.query<{ code: string }>("SELECT code FROM plans WHERE code = ANY($1)", [b.plan_codes]);
+      const thieu = b.plan_codes.filter((p) => !co.some((x) => x.code === p));
+      if (thieu.length) throw new HttpError(400, `Gói không tồn tại: ${thieu.join(", ")}`);
+    }
+    return db.tx(async (q) => {
+      const [truoc] = await q(`SELECT ${COUPON_COLS} FROM coupons WHERE code = $1 FOR UPDATE`, [code]);
+      const [sau] = await q(
+        `INSERT INTO coupons (code, kind, value, max_discount, min_amount, plan_codes, starts_at, ends_at, max_uses, max_uses_per_user, active, note, created_by)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+         ON CONFLICT (code) DO UPDATE SET kind = $2, value = $3, max_discount = $4, min_amount = $5, plan_codes = $6,
+           starts_at = $7, ends_at = $8, max_uses = $9, max_uses_per_user = $10, active = $11, note = $12, updated_at = now()
+         RETURNING ${COUPON_COLS}`,
+        [code, b.kind, b.value, b.max_discount, b.min_amount, b.plan_codes?.length ? b.plan_codes : null, b.starts_at, b.ends_at,
+          b.max_uses, b.max_uses_per_user, b.active, b.note, me.id]);
+      await ghiNhatKy(q, req, me, { action: truoc ? "coupon.update" : "coupon.create", target_type: "coupon", target_id: code, before: truoc, after: sau });
+      return sau;
+    });
+  });
+
+  // ---- Phễu chuyển đổi ----
+  app.get("/admin/funnel", { schema: sec }, async (req) => {
+    const { days } = parse(z.object({ days: z.coerce.number().int().min(1).max(365).default(30) }), req.query, "query");
+    return phieu(app, days);
   });
 }

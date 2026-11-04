@@ -8,6 +8,7 @@
  */
 import { randomInt } from "node:crypto";
 import type { Db } from "../db/index.js";
+import { apDungMa, chuanHoaMa } from "./coupons.js";
 
 export const ORDER_PREFIX = () => (process.env.ORDER_PREFIX || "TUVI").toUpperCase();
 const ORDER_TTL_MIN = () => Number(process.env.ORDER_EXPIRES_MIN || 30);
@@ -23,6 +24,7 @@ export interface Order {
   valid_days: number; status: "pending" | "paid" | "cancelled" | "refunded"; created_at: string; expires_at: string;
   paid_at: string | null; paid_by: string | null; note: string;
   refunded_at?: string | null; refund_amount?: number | null; refund_note?: string | null;
+  original_amount?: number | null; discount_amount?: number; coupon_code?: string | null;
 }
 
 export function newOrderCode(): string {
@@ -62,7 +64,7 @@ export function paymentInfo(order: Pick<Order, "code" | "amount">): PaymentInfo 
 
 export const billingConfigured = () => Boolean(process.env.SEPAY_BANK && process.env.SEPAY_ACCOUNT_NUMBER);
 
-const ORDER_COLS = "id, code, user_id, plan_code, amount, credits, valid_days, status, created_at, expires_at, paid_at, paid_by, note, refunded_at, refund_amount";
+const ORDER_COLS = "id, code, user_id, plan_code, amount, credits, valid_days, status, created_at, expires_at, paid_at, paid_by, note, refunded_at, refund_amount, original_amount, discount_amount, coupon_code";
 
 export class Billing {
   constructor(private db: Db) {}
@@ -72,23 +74,39 @@ export class Billing {
       ${all ? "" : "WHERE active"} ORDER BY sort, price`);
   }
 
-  /** Tạo đơn; nếu người dùng đã có đơn cùng gói còn chờ thanh toán thì dùng lại (tránh tạo trùng khi tải lại trang). */
-  async createOrder(userId: number, planCode: string): Promise<Order | null> {
-    const [plan] = await this.db.query<Plan>("SELECT * FROM plans WHERE code = $1 AND active", [planCode]);
-    if (!plan) return null;
-    const [reuse] = await this.db.query<Order>(
-      `SELECT ${ORDER_COLS} FROM orders WHERE user_id = $1 AND plan_code = $2 AND status = 'pending'
-       AND expires_at > now() + interval '5 minutes' AND amount = $3 ORDER BY id DESC LIMIT 1`, [userId, planCode, plan.price]);
-    if (reuse) return reuse;
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const rows = await this.db.query<Order>(
-        `INSERT INTO orders (code, user_id, plan_code, amount, credits, valid_days, expires_at)
-         VALUES ($1, $2, $3, $4, $5, $6, now() + make_interval(mins => $7))
-         ON CONFLICT (code) DO NOTHING RETURNING ${ORDER_COLS}`,
-        [newOrderCode(), userId, plan.code, plan.price, plan.credits, plan.valid_days, ORDER_TTL_MIN()]);
-      if (rows.length) return rows[0];
-    }
-    throw new Error("Không sinh được mã đơn");
+  /**
+   * Tạo đơn (có thể kèm mã giảm giá). Nếu người dùng đã có đơn chờ cùng gói, cùng mã, cùng giá thì dùng lại
+   * (tránh tạo trùng khi tải lại trang). Mã giảm 100% → đơn 0đ được coi là đã thanh toán ngay.
+   * Ném CouponError nếu mã không dùng được.
+   */
+  async createOrder(userId: number, planCode: string, couponCode?: string | null): Promise<Order | null> {
+    return this.db.tx(async (q) => {
+      const [plan] = await q<Plan>("SELECT * FROM plans WHERE code = $1 AND active", [planCode]);
+      if (!plan) return null;
+      const ma = couponCode ? chuanHoaMa(couponCode) : null;
+      const [reuse] = await q<Order>(
+        `SELECT ${ORDER_COLS} FROM orders WHERE user_id = $1 AND plan_code = $2 AND status = 'pending'
+         AND expires_at > now() + interval '5 minutes' AND coupon_code IS NOT DISTINCT FROM $3
+         AND original_amount = $4 ORDER BY id DESC LIMIT 1`, [userId, planCode, ma, plan.price]);
+      // Có mã: kiểm tra lại (mã có thể vừa bị tắt/hết hạn); đơn đang giữ chỗ của chính người này không tính.
+      const kq = ma ? await apDungMa(q, ma, userId, plan, true, reuse?.id) : null;
+      const amount = kq ? kq.amount : plan.price;
+      if (reuse && reuse.amount === amount) return reuse;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const rows = await q<Order>(
+          `INSERT INTO orders (code, user_id, plan_code, amount, credits, valid_days, expires_at, original_amount, discount_amount, coupon_code)
+           VALUES ($1, $2, $3, $4, $5, $6, now() + make_interval(mins => $7), $8, $9, $10)
+           ON CONFLICT (code) DO NOTHING RETURNING ${ORDER_COLS}`,
+          [newOrderCode(), userId, plan.code, amount, plan.credits, plan.valid_days, ORDER_TTL_MIN(), plan.price, kq?.discount ?? 0, ma]);
+        if (!rows.length) continue;
+        if (amount > 0) return rows[0];
+        // Đơn 0đ (mã giảm 100%): không cần chuyển khoản
+        await this.markPaid(rows[0].id, `coupon:${ma}`, q);
+        const [paid] = await q<Order>(`SELECT ${ORDER_COLS} FROM orders WHERE id = $1`, [rows[0].id]);
+        return paid;
+      }
+      throw new Error("Không sinh được mã đơn");
+    });
   }
 
   async order(id: number, userId?: number): Promise<Order | undefined> {

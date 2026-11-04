@@ -17,6 +17,10 @@ import { HttpError, currentUser, jsonSchema, parse } from "../http.js";
 import { BirthInput, InterpretInput, ReportInput, YearInput, YearReportInput } from "../schemas.js";
 import { luanVanNam, type VanNam } from "../../agents/vanNam.js";
 import { birthOnly, chartKey } from "../service.js";
+import { track } from "../../analytics/events.js";
+
+/** Ghi sự kiện phễu: (tên, props). */
+type Ev = (name: string, props?: Record<string, unknown>) => void;
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const VIEWER = join(HERE, "..", "..", "..", "data", "laso_viewer.html");
@@ -55,8 +59,9 @@ export async function coreRoutes(app: FastifyInstance) {
     tinh: pysorted(Object.keys(KINH_DO_TINH)),
   }));
 
-  app.post("/v1/la-so", tag(["lá số"], BirthInput, { summary: "Lá số + đại hạn + cách cục" }), async (req) => {
+  app.post("/v1/la-so", tag(["lá số"], BirthInput, { summary: "Lá số + đại hạn + cách cục" }), async (req, reply) => {
     const c = svc.tinhLaSo(parse(BirthInput, req.body));
+    track(app, req, reply, "lap_la_so");
     return { chart: c, dai_han: vanHan.danhSachDaiHan(c), cach_cuc: nhanDienCachCuc(c) };
   });
 
@@ -71,8 +76,9 @@ export async function coreRoutes(app: FastifyInstance) {
    * onCung (nếu có) được gọi lần lượt từng cung — dùng cho streaming.
    */
   async function luanGiai(req: Parameters<typeof currentUser>[0], body: z.infer<typeof ReportInput>,
-    onCung?: (k: LuanCung) => void) {
+    ev: Ev, onCung?: (k: LuanCung) => void) {
     const user = await currentUser(req, false).catch(() => null);
+    ev(body.use_llm ? "ai_bam" : "luan_giai", { loai: "la_so" });
     const chay = async (ai: boolean) => {
       if (onCung) {
         const usage = newUsage();
@@ -100,6 +106,7 @@ export async function coreRoutes(app: FastifyInstance) {
       return { ...(saved.report as Report), billing: { charged: false, da_mo_khoa: true, credits_left } };
     }
     if ((await app.billing.credits(q.userId)).credits_left <= 0) {
+      ev("ai_het_luot", { loai: "la_so" });
       throw new HttpError(402, "Bạn đã dùng hết lượt luận giải chuyên sâu. Mua thêm gói để mở khoá lá số này.");
     }
     await svc.kiemTraNganSach();
@@ -115,6 +122,7 @@ export async function coreRoutes(app: FastifyInstance) {
     if (soCungAi >= MIN_CUNG_AI()) {
       const kq = await app.billing.unlock(q.userId, key, birthOnly(body), r, sections);
       charged = kq === "ok";
+      if (charged) ev("ai_mo_khoa", { loai: "la_so" });
     }
     const { credits_left } = await app.billing.credits(q.userId);
     return {
@@ -129,10 +137,10 @@ export async function coreRoutes(app: FastifyInstance) {
   app.post("/v1/luan-giai", { ...app.limit(60, "1 hour", true), ...tag(["luận giải"], ReportInput, {
     summary: "Báo cáo luận giải 12 cung (đã qua Guardrail). use_llm=true: AI, cần X-API-Key hoặc đăng nhập + còn lượt",
     security: [{ apiKey: [] }, { bearer: [] }, { cookie: [] }, {}],
-  }) }, async (req) => {
+  }) }, async (req, reply) => {
     const body = parse(ReportInput, req.body);
     svc.tinhLaSo(body); // lỗi đầu vào → 400 trước khi kiểm tra quyền/lượt
-    return luanGiai(req, body);
+    return luanGiai(req, body, (n, p) => track(app, req, reply, n, p));
   });
 
   /**
@@ -149,10 +157,13 @@ export async function coreRoutes(app: FastifyInstance) {
   }) }, async (req, reply) => {
     const body = parse(ReportInput, req.body);
     const chart = svc.tinhLaSo(body);
+    // Sự kiện bắt đầu ghi trước khi mở stream (lúc đó còn đặt được cookie mã khách)
+    track(app, req, reply, body.use_llm ? "ai_bam" : "luan_giai", { loai: "la_so" });
     if (body.use_llm) {
       const q = await quyenLlm(req);
       const daMoKhoa = !q.noiBo && Boolean(await app.billing.unlocked(q.userId, chartKey(body)));
       if (!q.noiBo && !daMoKhoa && (await app.billing.credits(q.userId)).credits_left <= 0) {
+        track(app, req, reply, "ai_het_luot", { loai: "la_so" });
         throw new HttpError(402, "Bạn đã dùng hết lượt luận giải chuyên sâu. Mua thêm gói để mở khoá lá số này.");
       }
       if (!daMoKhoa) await svc.kiemTraNganSach();
@@ -166,7 +177,10 @@ export async function coreRoutes(app: FastifyInstance) {
     const send = (event: string, data: unknown) => raw.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
     try {
       send("cach_cuc", nhanDienCachCuc(chart));
-      const r = await luanGiai(req, body, (k) => send("cung", k));
+      const evSau: Ev = (n, p) => {
+        if (n === "ai_mo_khoa") track(app, req, reply, n, p);
+      };
+      const r = await luanGiai(req, body, evSau, (k) => send("cung", k));
       send("done", r);
     } catch (e) {
       req.log.error(e);
@@ -184,9 +198,11 @@ export async function coreRoutes(app: FastifyInstance) {
    */
   app.post("/v1/luan-giai/nam", { ...app.limit(60, "1 hour", true), ...tag(["luận giải"], YearReportInput, {
     summary: "Luận giải vận năm + 12 tháng", security: [{ apiKey: [] }, { bearer: [] }, { cookie: [] }, {}],
-  }) }, async (req) => {
+  }) }, async (req, reply) => {
     const body = parse(YearReportInput, req.body);
     const chart = svc.tinhLaSo(body);
+    const ev: Ev = (n, p) => track(app, req, reply, n, { loai: "nam", ...p });
+    ev(body.use_llm ? "ai_bam" : "luan_giai");
     const user = await currentUser(req, false).catch(() => null);
     const kb = svc.kb.get();
     const logNam = (r: VanNam, userId: number | null, usage: ia.LlmUsage | null) => svc.ghiLog(body, body.use_llm, {
@@ -215,6 +231,7 @@ export async function coreRoutes(app: FastifyInstance) {
       return { ...(saved.report as VanNam), billing: { charged: false, da_mo_khoa: true, credits_left } };
     }
     if ((await app.billing.credits(q.userId)).credits_left <= 0) {
+      ev("ai_het_luot");
       throw new HttpError(402, "Bạn đã dùng hết lượt luận giải chuyên sâu. Mua thêm gói để mở khoá luận giải năm này.");
     }
     await svc.kiemTraNganSach();
@@ -223,6 +240,7 @@ export async function coreRoutes(app: FastifyInstance) {
     logNam(r, q.userId, usage);
     let charged = false;
     if (r.mode === "llm") charged = (await app.billing.unlock(q.userId, key, { ...birthOnly(body), nam_xem: body.nam_xem }, r, [])) === "ok";
+    if (charged) ev("ai_mo_khoa");
     const { credits_left } = await app.billing.credits(q.userId);
     return {
       ...r,

@@ -4,6 +4,9 @@ import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { billingConfigured, findOrderCode, paymentInfo, type Order } from "../../billing/billing.js";
 import { receipt } from "../../email/templates.js";
+import { SU_KIEN_TU_TRANG, track } from "../../analytics/events.js";
+import { CouponError, apDungMa } from "../../billing/coupons.js";
+import type { Plan } from "../../billing/billing.js";
 import { HttpError, currentUser, jsonSchema, parse } from "../http.js";
 
 /** Gửi email biên nhận cho đơn vừa thanh toán (lỗi gửi không ảnh hưởng đơn). */
@@ -18,7 +21,8 @@ export async function guiBienNhan(app: FastifyInstance, orderId: number): Promis
   }
 }
 
-const CreateOrder = z.object({ plan_code: z.string().min(1).max(50) });
+const CreateOrder = z.object({ plan_code: z.string().min(1).max(50), coupon_code: z.string().trim().max(40).nullish() });
+const CheckCoupon = z.object({ plan_code: z.string().min(1).max(50), code: z.string().trim().min(1).max(40) });
 const IdParam = z.object({ id: z.coerce.number().int().positive() });
 
 /** Dữ liệu SePay gửi tới webhook (theo gói tích hợp chính thức sepayvn/laravel-sepay). */
@@ -79,10 +83,40 @@ export async function billingRoutes(app: FastifyInstance) {
     if (process.env.REQUIRE_EMAIL_VERIFIED !== "0" && !me.email_verified) {
       throw new HttpError(403, "Bạn cần xác nhận email trước khi mua gói. Kiểm tra hộp thư hoặc gửi lại email xác nhận.");
     }
-    const { plan_code } = parse(CreateOrder, req.body);
-    const o = await billing.createOrder(me.id, plan_code);
+    const { plan_code, coupon_code } = parse(CreateOrder, req.body);
+    let o;
+    try {
+      o = await billing.createOrder(me.id, plan_code, coupon_code || null);
+    } catch (e) {
+      if (e instanceof CouponError) throw new HttpError(400, e.message);
+      throw e;
+    }
     if (!o) throw new HttpError(404, "Gói không tồn tại hoặc đã ngừng bán");
+    track(app, req, reply, "don_tao", { order_id: o.id, plan: o.plan_code, coupon: o.coupon_code ?? null, amount: o.amount });
+    if (o.status === "paid") await guiBienNhan(app, o.id); // đơn 0đ (mã giảm 100%)
     return reply.status(201).send(view(o));
+  });
+
+  /** Kiểm tra mã giảm giá cho một gói, trả giá sau giảm (chưa giữ chỗ — chỉ giữ khi tạo đơn). */
+  app.post("/v1/coupons/check", { schema: { ...sec, body: jsonSchema(CheckCoupon) }, ...app.limit(30, "10 minutes", true) }, async (req) => {
+    const me = await currentUser(req, true);
+    const b = parse(CheckCoupon, req.body);
+    const [plan] = await app.db.query<Plan>("SELECT * FROM plans WHERE code = $1 AND active", [b.plan_code]);
+    if (!plan) throw new HttpError(404, "Gói không tồn tại hoặc đã ngừng bán");
+    try {
+      const kq = await apDungMa(app.db.query.bind(app.db), b.code, me.id, plan);
+      return { code: kq.coupon.code, original: kq.original, discount: kq.discount, amount: kq.amount, note: kq.coupon.note };
+    } catch (e) {
+      if (e instanceof CouponError) throw new HttpError(400, e.message);
+      throw e;
+    }
+  });
+
+  /** Sự kiện do trang web gửi (chỉ nhận danh sách cho phép; dùng cho phễu chuyển đổi). */
+  app.post("/v1/events", { schema: { tags: ["thống kê"], summary: "Ghi sự kiện phễu từ trang web" }, ...app.limit(120, "10 minutes") }, async (req, reply) => {
+    const b = parse(z.object({ name: z.enum(SU_KIEN_TU_TRANG), plan: z.string().max(50).optional() }), req.body);
+    track(app, req, reply, b.name, b.plan ? { plan: b.plan } : {});
+    return reply.status(204).send();
   });
 
   app.get("/v1/orders/:id", { schema: { ...sec, summary: "Xem đơn (dùng để chờ thanh toán)" } }, async (req) => {

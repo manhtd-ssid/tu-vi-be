@@ -186,4 +186,40 @@ ALTER TABLE payment_transactions ADD COLUMN resolved_at TIMESTAMPTZ;
 ALTER TABLE payment_transactions ADD COLUMN resolved_by TEXT;
 ALTER TABLE payment_transactions ADD COLUMN resolve_note TEXT;
 `,
+  `
+CREATE TABLE coupons (
+  code               TEXT PRIMARY KEY,
+  kind               TEXT NOT NULL CHECK (kind IN ('percent', 'amount')),
+  value              INTEGER NOT NULL CHECK (value > 0),
+  max_discount       INTEGER CHECK (max_discount > 0),
+  min_amount         INTEGER NOT NULL DEFAULT 0,
+  plan_codes         TEXT[],
+  starts_at          TIMESTAMPTZ,
+  ends_at            TIMESTAMPTZ,
+  max_uses           INTEGER CHECK (max_uses > 0),
+  max_uses_per_user  INTEGER NOT NULL DEFAULT 1 CHECK (max_uses_per_user > 0),
+  active             BOOLEAN NOT NULL DEFAULT true,
+  note               TEXT NOT NULL DEFAULT '',
+  created_by         INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at         TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE orders ADD COLUMN original_amount INTEGER;
+ALTER TABLE orders ADD COLUMN discount_amount INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE orders ADD COLUMN coupon_code TEXT REFERENCES coupons(code);
+UPDATE orders SET original_amount = amount WHERE original_amount IS NULL;
+CREATE INDEX orders_coupon ON orders (coupon_code, status) WHERE coupon_code IS NOT NULL;
+
+CREATE TABLE events (
+  id          BIGSERIAL PRIMARY KEY,
+  name        TEXT NOT NULL,
+  visitor     TEXT NOT NULL,
+  user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  props       JSONB NOT NULL DEFAULT '{}',
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX events_name_created ON events (name, created_at);
+CREATE INDEX events_created ON events (created_at);
+`,
 ];
