@@ -1,0 +1,34 @@
+# Chạy đủ bộ backend ở máy local:  docker compose up --build
+# Biến môi trường lấy từ .env ở gốc repo (xem .env.example).
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: tuvi
+      POSTGRES_PASSWORD: tuvi
+      POSTGRES_DB: tuvi
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tuvi -d tuvi"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: ./server
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgres://tuvi:tuvi@db:5432/tuvi
+      JWT_SECRET: ${JWT_SECRET:-doi-ngay-chuoi-bi-mat-nay}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
+    ports:
+      - "8973:8973"
+
+volumes:
+  pgdata:
